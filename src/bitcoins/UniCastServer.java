@@ -6,13 +6,16 @@
 package bitcoins;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.security.PublicKey;
+import java.sql.Timestamp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,6 +70,12 @@ public class UniCastServer extends Thread {
         
         while (true) {
             try {
+                int id;
+                int port;
+                PublicKey pubKey;
+                int coinAmount;
+                int coinPrice;
+                
                 // ********************************************
                 // Receiving an UDP message
                 buffer = new byte[1024];
@@ -81,25 +90,86 @@ public class UniCastServer extends Thread {
                     // ********************************************
                     // types supported:
                     // N --> Information of others process.
+                    // B --> Buying request
                     
                     case ('N'): 
                         // *********************************************
                         // Unpacking rest of the message
-                        int id = ois.readInt();
-                        int port = ois.readInt();
-                        PublicKey pubKey = (PublicKey) ois.readObject();
-                        int coinAmount = ois.readInt();
-                        int coinPrice = ois.readInt();
+                        id = ois.readInt();
+                        port = ois.readInt();
+                        pubKey = (PublicKey) ois.readObject();
+                        coinAmount = ois.readInt();
+                        coinPrice = ois.readInt();
                         
                         // *********************************************
                         // Creating new process and add in the list of process
                         Process newProcess = new Process(id, port, pubKey, coinAmount, coinPrice);
                         BitCoins.processList.add(newProcess);
                         
-                        System.out.println("\n[UNICAST - RECEIVE] ID: " + id +
-                                " Porta: "+ port + " | Public Key: -Intern- | " +
-                                "Coin Amount: " + coinAmount +
-                                " | Coin Price: "+ coinPrice);
+                        System.out.println("");
+                        System.out.print("[UNICAST - RECEIVE]");
+                        System.out.print(", ID: " + id);
+                        System.out.print(", Port: " + port);
+                        System.out.print(", Public Key: Intern");
+                        System.out.print(", Coin Amount: " + coinAmount);
+                        System.out.println(", Coin Price: " + coinPrice);
+                        
+//                        System.out.println("\n[UNICAST - RECEIVE] ID: " + id +
+//                                " Porta: "+ port + " | Public Key: -Intern- | " +
+//                                "Coin Amount: " + coinAmount +
+//                                " | Coin Price: "+ coinPrice);
+                        break;
+                        
+                    case ('B'):
+                        // *********************************************
+                        // Unpacking rest of the message
+                        id = ois.readInt();
+                        port = ois.readInt();
+                        int bAmount = ois.readInt();
+                        
+                        System.out.println("");    
+                        System.out.print("[UNICAST - RECEIVE]");
+                        System.out.println(" Buying Request from process: " + id);
+                        
+                        // *********************************************
+                        // Encrypting buyer's ID with Seller's Private Key
+                        String text = "" + id;
+                        byte[] encryptedText = Keys.encrypt(text, BitCoins.privKey);
+                        
+                        
+                        // *********************************************
+                        // Packing mining and validation message.
+                        Timestamp date = new Timestamp(System.currentTimeMillis());
+                        long ts = date.getTime();
+                        
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream(10);
+                        ObjectOutputStream oos = new ObjectOutputStream(bos);
+                        oos.writeChar('M');
+                        oos.writeInt(id);
+                        oos.writeInt(port);
+                        oos.writeInt(process.getId());
+                        oos.writeInt(process.getPort());
+                        oos.writeInt(bAmount);
+                        oos.writeInt(encryptedText.length);
+                        oos.write(encryptedText);
+                        oos.writeLong(ts);
+                        oos.flush();
+                        
+                        // Converte o objeto para uma array de bytes e envia por datagrama
+                        byte[] msg = bos.toByteArray();
+                        DatagramPacket messageOut = new DatagramPacket(msg, msg.length, group, MULT_PORT);
+                        
+                        System.out.print("[MULTICAST SEND]");
+                        System.out.print(" Sending mining and validation request");
+                        System.out.print(" Buyer ID: " + id);
+                        System.out.print(", Seller ID: " + process.getId());
+                        System.out.print(", Coin Amount: " + bAmount);
+                        System.out.println(", Transaction ID: "+ ts);
+                        System.out.println("");
+                        s.send(messageOut);
+                        
+                        break;
+                        
                 }
             } catch (IOException ex) {
                 System.out.println("Unicast Exception");

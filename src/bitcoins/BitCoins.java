@@ -12,7 +12,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Scanner;
@@ -30,18 +29,20 @@ import java.util.Scanner;
  */
 public class BitCoins {
     static ArrayList<Process> processList = new ArrayList<>();
+    static PrivateKey privKey             = null;
+    static int MINING_REWARD              = 1;
     
     public static void main(String[] args) throws UnknownHostException, IOException {
         
         
-        int MULT_PORT   = 6789;
-        String MULT_IP  = "228.5.6.7";
+        int MULT_PORT              = 6789;
+        String MULT_IP             = "228.5.6.7";
+        
         
         MulticastSocket s       = null;
         DatagramSocket socket   = null;
         Process process         = null;
         Keys keys               = null;
-        PrivateKey privKey      = null;
         PublicKey pubKey        = null;
         
         try {
@@ -50,7 +51,7 @@ public class BitCoins {
             InetAddress group = InetAddress.getByName(MULT_IP);
             s = new MulticastSocket(MULT_PORT);
             s.joinGroup(group);
-            
+            socket = new DatagramSocket();
 
             // ********************************************
             // Receiving data from user
@@ -107,14 +108,11 @@ public class BitCoins {
             byte[] m = bos.toByteArray();
             DatagramPacket messageOut = new DatagramPacket(m, m.length, group, MULT_PORT);
  
-            //Timestamp date = new Timestamp(System.currentTimeMillis());
-            //long timestamp = date.getTime();
- 
             System.out.println("\n[MULTICAST SEND] Sending information about this new process:");
             System.out.print("[MULTICAST SEND]");
             System.out.print(" ID: " + id);
             System.out.print(", Port: " + port);
-            System.out.print(", Public Key: -Intern-");
+            System.out.print(", Public Key: Intern");
             System.out.print(", Coin Amount: " + coinAmount);
             System.out.println(", Coin Price: " + coinPrice);
             s.send(messageOut);
@@ -130,41 +128,93 @@ public class BitCoins {
                 String cmd;
                 
                 System.out.println("");
-                System.out.print("Press: ");
-                System.out.print("B to buy coins; ");
-                System.out.print("V to verify intenal DB; ");
-                System.out.print("T to see log of Transactions; ");
-                System.out.println("E to exit");
+                System.out.println("Press: ");
+                System.out.println("[B] to buy coins ");
+                System.out.println("[V] to List Of Processes ");
+                System.out.println("[T] to List Of Transactions ");
+                System.out.println("[E] to Exit");
                 
                 cmd = in.nextLine().trim().toUpperCase();
+                System.out.println("");
                 
                 Iterator it;
                 switch (cmd) {
                     
                     case "B":
+                        // check if there are more than 2 active processes
+                        if (BitCoins.processList.size() <= 2) {
+                            System.out.println("Must have at least three ative processes to buy coins");
+                            break;
+                        }
+                        
                         int cmdBId;
-                        //System.out.println("Case B");
-                        
-                        System.out.println("Do buy from which process ID?");
+                        System.out.println("Of what process do you wish to buy?");
                         cmdBId = Integer.parseInt(in.nextLine().trim());
+                        System.out.println("");
                         
-                        //check if this process ID exists
+                        // *********************************************
+                        // check if this process ID exists
+                        Process paux = null;
                         it = BitCoins.processList.iterator();
                         while (it.hasNext()) {
                             Process p = (Process) it.next();
-                            System.out.println(p.getId());
-                            System.out.println(cmdBId);
-                            if (p.getId() == cmdBId) {
-                                System.out.println("Process has been found");
-                            } else {
-                                System.out.println("Process has not been found, try again");
+                            //System.out.println(p.getId());
+                            //System.out.println(cmdBId);
+                            if (p.getId() == cmdBId && cmdBId != process.getId()) {
+                                paux = p;
                             }
                         }
+                        
+                        if (paux == null) {
+                            System.out.println("Process has not been found or self-buying, try again");
+                            break;
+                        }
+                        
+                        System.out.println("Process has been found");
+                        
+                        // *********************************************
+                        // getting seller information
+                        int sid             = paux.getId();
+                        int sport           = paux.getPort();
+                        PublicKey sPubKey   = paux.getPubKey();
+                        int sCoinAmount     = paux.getCoinAmount();
+                        int sCoinPrice      = paux.getCoinPrice();
+                        
+                        System.out.println("How much coins do you want to buy?");
+                        int bAmount = Integer.parseInt(in.nextLine().trim());
+                        
+                        // checking if seller has enough coins to sell + mining reward
+                        if (bAmount + MINING_REWARD > sCoinAmount) {
+                            System.out.println("Seller has not enough coins to sell!");
+                            break;
+                        }
+                        
+                        // *********************************************
+                        // packing unicast message to seller
+                        ByteArrayOutputStream bos1 = new ByteArrayOutputStream(10);
+                        ObjectOutputStream oos1 = new ObjectOutputStream(bos1);
+                        oos1.writeChar('B');
+                        oos1.writeInt(process.getId());
+                        oos1.writeInt(process.getPort());
+                        oos1.writeInt(bAmount);
+                        oos1.flush();
+                        
+                        // sending unicast message to seller
+                        byte[] output = bos1.toByteArray();
+                        DatagramPacket messageOut1 = new DatagramPacket(output, output.length, InetAddress.getLocalHost(), sport);
+                        System.out.println("");    
+                        System.out.print("[UNICAST - SEND]");
+                        System.out.print(" Sending buy request to seller process " + paux.getId());
+                        System.out.print(", Buyer process " + process.getId());
+                        System.out.println(", Coin Amount " + bAmount);
+                        
+                        socket.send(messageOut1);
+                        
                         break;
                         
                     case "V":
-                        System.out.println("Print DB");
-
+                        
+                        System.out.println("List of Process:");
                         //Print all DBs
                         it = BitCoins.processList.iterator();
                         while (it.hasNext()) {
@@ -174,29 +224,27 @@ public class BitCoins {
                         break;
                     
                     case "T":
-                        System.out.println("Case T");
+                        System.out.println("Print Transactions:");
+                        Transaction t = null;
+                        Iterator iter = Process.transactionList.iterator();
+                        while (iter.hasNext()) {
+                            t = (Transaction) iter.next();
+                            t.printTransaction();
+                        }
                         break;
                         
                     case "S":
-                        System.out.println("Case S");
+                        System.out.println("Bye!");
                         s.leaveGroup(group);
                         s.close();
                         System.exit(0);
-                    
-                    
                 }
-                
-                
-            
             }
-            
-
         } catch (SocketException e) {
             System.out.println("Socket error: " + e.getMessage());
         } catch (IOException e) {
             System.out.println("IO error: " + e.getMessage());
         } finally {
-            
             if (s != null) {
                 s.close();
             }
@@ -210,6 +258,7 @@ class Process implements Serializable {
     private int coinAmount;
     private final int coinPrice;
     private final PublicKey pubKey;
+    static ArrayList<Transaction> transactionList = new ArrayList<>();
     //boolean wait;
     //boolean mineflag;
     
@@ -226,7 +275,7 @@ class Process implements Serializable {
     }
     
     public String printProcess() {
-        return "Process{ID=" + id + ", port=" + port + ", coinAmount=" + coinAmount + ", coinPrice=" + coinPrice + '}';
+        return "ID: " + id + ", Port: " + port + ", Coin Amount: " + coinAmount + ", Coin Price: " + coinPrice;
     }
     
     public int getId() {

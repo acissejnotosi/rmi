@@ -41,7 +41,7 @@ public class Keys {
     
     // ********************************************
     // Return an encrypted text using the private key.
-    public byte[] encrypt(String text, PrivateKey priv) {
+    public static byte[] encrypt(String text, PrivateKey priv) {
         byte[] cipherText = null;
         try {
             Cipher cipher = Cipher.getInstance("RSA"); 
@@ -56,7 +56,7 @@ public class Keys {
     
     // ********************************************
     // Return an decrypted text using the private key.
-    public String decrypt(byte[] text, PublicKey pub) {
+    public static String decrypt(byte[] text, PublicKey pub) {
         byte[] dectyptedText = null;
         try {
             Cipher cipher = Cipher.getInstance("RSA");
