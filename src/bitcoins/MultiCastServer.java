@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package bitcoins;
 
 import java.io.ByteArrayInputStream;
@@ -16,16 +11,16 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.security.PublicKey;
-import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Random;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  *
- * @author samuel
+ * @author Samuel Pelegrinello Caipers
+ * Sistemas Distribuidos - Tarefa 01
+ * 
  */
 public class MultiCastServer extends Thread {
     MulticastSocket s       = null;
@@ -35,8 +30,6 @@ public class MultiCastServer extends Thread {
     String MULT_IP          = null;
     int MULT_PORT           = 0;
     
-    
-    
     /**
      *
      * @param p Process
@@ -44,10 +37,10 @@ public class MultiCastServer extends Thread {
      * @param MULT_PORT Multicast Port
      */
     public MultiCastServer (Process p, String MULT_IP, int MULT_PORT) throws SocketException {
-        this.socket = new DatagramSocket();
-        this.process = p;
-        this.MULT_IP = MULT_IP;
-        this.MULT_PORT = MULT_PORT;
+        this.socket     = new DatagramSocket();
+        this.process    = p;
+        this.MULT_IP    = MULT_IP;
+        this.MULT_PORT  = MULT_PORT;
         
         // ********************************************
         // Inserts this thread into the Multicast Group.
@@ -58,7 +51,6 @@ public class MultiCastServer extends Thread {
         } catch (IOException e) {
             System.out.println("Connection:" + e.getMessage());
         }
-        // ********************************************
     }
     
     @Override
@@ -81,7 +73,6 @@ public class MultiCastServer extends Thread {
                 long transactionID;
                 char status;
                 Process paux;
-                        
 
                 // ********************************************
                 // Receives the multicast message and deserializing it
@@ -93,7 +84,6 @@ public class MultiCastServer extends Thread {
                 bis = new ByteArrayInputStream(msg);
                 ois = new ObjectInputStream(bis);
                 type = ois.readChar();
-                
                 
                 switch (type) {
                     // ********************************************
@@ -155,8 +145,8 @@ public class MultiCastServer extends Thread {
                             
                             socket.send(messageOut);
                             break;
-                            
                         }
+
                     case ('M'):
                         Transaction transaction;
                         // *********************************************
@@ -177,28 +167,12 @@ public class MultiCastServer extends Thread {
                         // Check this process is seller or buyer
                         // If yes, break; ow, go on.
                         if (process.getId() == bid || process.getId() == sid) {
-//                            System.out.println("Process is the buyer or seller, ignores it");
-                            
                             // transaction log for buyers or sellers.
                             transaction = new Transaction(transactionID, bid, sid, bAmount);
                             transaction.setStatus("NC");
                             Process.transactionList.add(transaction);
                             break;
                         }
-                        
-                        // *********************************************
-                        // Decision about mining (item 5 documentation).
-//                        Scanner in = new Scanner(System.in);
-//                        System.out.print("There is a mining request. ");
-//                        System.out.println("Do you like mining? [Y] or [N]?");
-//                        String answer = in.nextLine().trim();
-//                        
-//                        if (answer.equals("Y")) {
-//                            System.out.println("This process is mining now");
-//                        } else if (answer.equals("N")) {
-//                            System.out.println("This request will not be mining");
-//                            break;
-//                        }
                         
                         System.out.println("This process is mining now\n");
                         // *********************************************
@@ -208,8 +182,8 @@ public class MultiCastServer extends Thread {
                         transaction.setStatus("NC");
                         Process.transactionList.add(transaction);
                         
-//                        // *********************************************
-//                        // Creating a delay simulating mineration
+//                      // *********************************************
+//                      // Creating a delay simulating mineration
                         Random random = new Random();
                         long fraction = (long)(4000 * random.nextDouble());
                         int randomnumbr = (int)(fraction + 1000);
@@ -235,12 +209,10 @@ public class MultiCastServer extends Thread {
                             System.exit(1);
                         }
                         
-                        
                         // *********************************************
                         // Validation of the transaction.
                         String decrypedText = Keys.decrypt(encryptedText, paux.getPubKey());
                         
-//                        System.out.println("decrypted: " + decrypedText);
                         if (Integer.parseInt(decrypedText) == sid) {
                             System.out.println("Key of Seller not confirmed. ID = " + sid);
                             status = 'I';
@@ -272,7 +244,6 @@ public class MultiCastServer extends Thread {
                             
                         break;
                     case ('V'):
-//                        System.out.println("Case V");
                         Iterator iter;
                         
                         // *********************************************
@@ -295,11 +266,6 @@ public class MultiCastServer extends Thread {
                             }
                         }
                         
-//                        if (t != null) {
-////                            System.out.println("tid: " + t.getId());
-////                            System.out.println("transactionStatus: " + t.getStatus());
-//                        }
-                        
                         if (t.getStatus().equals("C") || t.getStatus().equals("I")) {
                             break;
                         } else {
@@ -311,7 +277,6 @@ public class MultiCastServer extends Thread {
                             out += " has been firstly mined by process " + mid;
                             System.out.println(out);
                         }
-                        
                         
                         // *********************************************
                         // Updating DB
@@ -329,11 +294,7 @@ public class MultiCastServer extends Thread {
                                 proc.setCoinAmount(proc.getCoinAmount() + BitCoins.MINING_REWARD);
                             }
                         }
-                        
-                        
-                        
                     break;
-                        
                 }
             } catch (IOException e) {
                 System.out.println("run" + e.getMessage());

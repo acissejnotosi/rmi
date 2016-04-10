@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package bitcoins;
 
 import java.io.ByteArrayInputStream;
@@ -21,7 +16,9 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author samuel
+ * @author Samuel Pelegrinello Caipers
+ * Sistemas Distribuidos - Tarefa 01
+ * 
  */
 public class UniCastServer extends Thread {
     DatagramSocket socket = null;
@@ -37,9 +34,9 @@ public class UniCastServer extends Thread {
     * @param MULT_PORT Multicast Port
     */
     public UniCastServer(Process p, String MULT_IP, int MULT_PORT) {
-        process = p;
-        this.MULT_IP = MULT_IP;
-        this.MULT_PORT = MULT_PORT;
+        this.process    = p;
+        this.MULT_IP    = MULT_IP;
+        this.MULT_PORT  = MULT_PORT;
         
         // ********************************************
         // Creates the UDP Socket in the port of the process.
@@ -113,11 +110,6 @@ public class UniCastServer extends Thread {
                         System.out.print(", Public Key: Intern");
                         System.out.print(", Coin Amount: " + coinAmount);
                         System.out.println(", Coin Price: " + coinPrice);
-                        
-//                        System.out.println("\n[UNICAST - RECEIVE] ID: " + id +
-//                                " Porta: "+ port + " | Public Key: -Intern- | " +
-//                                "Coin Amount: " + coinAmount +
-//                                " | Coin Price: "+ coinPrice);
                         break;
                         
                     case ('B'):
@@ -135,7 +127,6 @@ public class UniCastServer extends Thread {
                         // Encrypting buyer's ID with Seller's Private Key
                         String text = "" + id;
                         byte[] encryptedText = Keys.encrypt(text, BitCoins.privKey);
-                        
                         
                         // *********************************************
                         // Packing mining and validation message.
@@ -167,9 +158,7 @@ public class UniCastServer extends Thread {
                         System.out.println(", Transaction ID: "+ ts);
                         System.out.println("");
                         s.send(messageOut);
-                        
                         break;
-                        
                 }
             } catch (IOException ex) {
                 System.out.println("Unicast Exception");
@@ -178,5 +167,4 @@ public class UniCastServer extends Thread {
             }
         }
     }
-    
 }

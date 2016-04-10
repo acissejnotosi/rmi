@@ -16,11 +16,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Scanner;
 
-/*  PLANNING
-    Comunicação Broadcast.
-    Comunicação Monocast.
-*/
-
 /**
  *
  * @author Samuel Pelegrinello Caipers
@@ -33,12 +28,8 @@ public class BitCoins {
     static int MINING_REWARD              = 1;
     
     public static void main(String[] args) throws UnknownHostException, IOException {
-        
-        
-        int MULT_PORT              = 6789;
-        String MULT_IP             = "228.5.6.7";
-        
-        
+        int MULT_PORT           = 6789;
+        String MULT_IP          = "228.5.6.7";
         MulticastSocket s       = null;
         DatagramSocket socket   = null;
         Process process         = null;
@@ -94,14 +85,12 @@ public class BitCoins {
             oos.writeInt(coinPrice);
             oos.flush();
             
-            
             // *********************************************
             // Initializing multicast and unicast communication
             MultiCastServer multCastComm = new MultiCastServer(process, MULT_IP, MULT_PORT);
             multCastComm.start();
             UniCastServer uniCastComm = new UniCastServer(process, MULT_IP, MULT_PORT);
             uniCastComm.start();
-            
             
             // *********************************************
             // Sending multicast notification of its presence.
@@ -117,13 +106,8 @@ public class BitCoins {
             System.out.println(", Coin Price: " + coinPrice);
             s.send(messageOut);
             
-            
             // *********************************************
-            // After its annunciation, some commands may be performed, as follows:
-            // B --> to [B]uy coins
-            // V --> to [V]erify internal BD
-            // T --> log of [T]ransactions
-            // E --> to [E]xit
+            // Interaction phase.
             while (true) {
                 String cmd;
                 
@@ -158,8 +142,6 @@ public class BitCoins {
                         it = BitCoins.processList.iterator();
                         while (it.hasNext()) {
                             Process p = (Process) it.next();
-                            //System.out.println(p.getId());
-                            //System.out.println(cmdBId);
                             if (p.getId() == cmdBId && cmdBId != process.getId()) {
                                 paux = p;
                             }
@@ -209,13 +191,10 @@ public class BitCoins {
                         System.out.println(", Coin Amount " + bAmount);
                         
                         socket.send(messageOut1);
-                        
                         break;
                         
                     case "V":
-                        
                         System.out.println("List of Process:");
-                        //Print all DBs
                         it = BitCoins.processList.iterator();
                         while (it.hasNext()) {
                             Process p = (Process) it.next();
@@ -259,15 +238,13 @@ class Process implements Serializable {
     private final int coinPrice;
     private final PublicKey pubKey;
     static ArrayList<Transaction> transactionList = new ArrayList<>();
-    //boolean wait;
-    //boolean mineflag;
     
     public Process(int id, int port, PublicKey pubKey, int coinAmount, int coinPrice) {
-        this.id = id;
-        this.port = port;
-        this.pubKey = pubKey;
-        this.coinAmount = coinAmount;
-        this.coinPrice = coinPrice;
+        this.id             = id;
+        this.port           = port;
+        this.pubKey         = pubKey;
+        this.coinAmount     = coinAmount;
+        this.coinPrice      = coinPrice;
     }
     
     public void setCoinAmount(int coinAmount) {
