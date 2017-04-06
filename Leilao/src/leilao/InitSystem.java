@@ -113,7 +113,28 @@ public class InitSystem {
 
         // *********************************************
         // Initializing multicast and unicast communication
-       
+           ReadingThread multCastComm = new ReadingThread(process,IP_MULTICAST, PORT_MULTICAST);
+            multCastComm.start();
+            UniCastServer uniCastComm = new UniCastServer(process, IP_MULTICAST, PORT_MULTICAST);
+            uniCastComm.start();
+            
+            // *********************************************
+            // Sending multicast notification of its presence.
+            byte[] m = bos.toByteArray();
+            DatagramPacket messageOut = new DatagramPacket(m, m.length, group, PORT_MULTICAST);
+ 
+            System.out.println("\n[MULTICAST SEND] Sending information about this new process:");
+            System.out.print("[MULTICAST SEND]");
+           System.out.print(" ID do participante: " + id);
+                            System.out.print(", Porta: " + port);
+                            System.out.print(", Chave publica: - ");
+                            System.out.print(", Nome produto: " + nomeProduto);
+                            System.out.println(",ID Produto: " + idProduto);
+                            System.out.print(",Descricao do produto: " + descProduto);
+                            System.out.println(",Preco do produto: " + precoProduto);
+
+            s.send(messageOut);
+        
        
         
         // *********************************************
@@ -135,13 +156,13 @@ public class InitSystem {
 
                 case "P":
                     // check if there are more than 2 active processes
-                    if (InitSystem.processList.size() <= 3) {
+                    if (InitSystem.processList.size() <= 2) {
                         System.out.println("Must have at least 4 ative processes to buy coins");
                         break;
                     }
 
-                    byte[] m = bos.toByteArray();
-                   DatagramPacket messageOut = new DatagramPacket(m, m.length, group, PORT_MULTICAST);
+                  //  byte[] m = bos.toByteArray();
+                  // DatagramPacket messageOut = new DatagramPacket(m, m.length, group, PORT_MULTICAST);
 
                     System.out.println("\n[MULTICAST SEND] Sending information about this new process:");
                     System.out.print("[MULTICAST SEND]");

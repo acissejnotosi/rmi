@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  *
  * @author a1562711
  */
-public class ReadingThread implements Runnable {
+public class ReadingThread extends Thread {
 
     String leitura1 = " ";
     Scanner scan = new Scanner(System.in);
@@ -60,21 +60,16 @@ public class ReadingThread implements Runnable {
         ByteArrayInputStream bis;
         ObjectInputStream ois;
         while (true) {
-
-            buffer = new byte[1024];
-
-            //le a mensagem
-            messageIn = new DatagramPacket(buffer, buffer.length);
             try {
-                s.receive(messageIn);
-            } catch (IOException ex) {
-                Logger.getLogger(ReadingThread.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            System.out.println("Received:" + new String(messageIn.getData()));
+                buffer = new byte[1024];
+                messageIn = new DatagramPacket(buffer, buffer.length);
+                
+                    s.receive(messageIn);
+                
+                
+                msg = messageIn.getData();
+                bis = new ByteArrayInputStream(msg);
 
-            msg = messageIn.getData();
-            bis = new ByteArrayInputStream(msg);
-            try {
                 ois = new ObjectInputStream(bis);
                 type = ois.readChar();
                 // ********************************************
@@ -95,11 +90,11 @@ public class ReadingThread implements Runnable {
                             // *********************************************
                             // Unpacking rest of the message
                             int port = ois.readInt();
-                            String nomeProduto = ois.readUTF();
-                            int idProduto = ois.readInt();
-                            String descProduto = ois.readUTF();
-                            int precoProduto = ois.readInt();
                             PublicKey chavePublica = (PublicKey) ois.readObject();
+                            String nomeProduto = ois.toString();
+                            int idProduto = ois.readInt();
+                            String descProduto = ois.toString();
+                            int precoProduto = ois.readInt();
 
                             // *********************************************
                             // Creating new process and add in the list of process
@@ -133,16 +128,21 @@ public class ReadingThread implements Runnable {
                             System.out.println(",ID Produto: " + idProduto);
                             System.out.print(",Descricao do produto: " + descProduto);
                             System.out.println(",Preco do produto: " + precoProduto);
-                            
 
-                          
+                            System.out.println("");
+                            System.out.print("[UNICAST - SEND]");
+                            System.out.print(" ID do participante: " + pid);
+                            System.out.print(", Porta: " + port);
+                            System.out.print(", Chave publica: - ");
+                            System.out.print(", Nome produto: " + nomeProduto);
+                            System.out.println(",ID Produto: " + idProduto);
+                            System.out.print(",Descricao do produto: " + descProduto);
+                            System.out.println(",Preco do produto: " + precoProduto);
+
                             socket.send(messageOut);
                             break;
                         }
-                    case 'M':
-                        
-                        
-                        break;
+                   
 
                 }
 
@@ -150,6 +150,7 @@ public class ReadingThread implements Runnable {
                 Logger.getLogger(ReadingThread.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(ReadingThread.class.getName()).log(Level.SEVERE, null, ex);
+            
             }
 
         }
