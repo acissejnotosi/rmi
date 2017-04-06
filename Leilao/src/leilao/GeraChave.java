@@ -24,8 +24,8 @@ import javax.crypto.Cipher;
  */
 public class GeraChave {
     
-    public byte[] chavePrivada;
-    public byte[] chavePublica;
+    public PrivateKey chavePrivada;
+    public PublicKey chavePublica;
     
     
     public static final String ALGORITHM = "RSA";
@@ -42,8 +42,8 @@ public class GeraChave {
             keyGen.initialize(1024);
             final KeyPair key = keyGen.generateKeyPair();
 
-            this.chavePrivada = key.getPrivate().getEncoded();
-            this.chavePublica = key.getPublic().getEncoded();
+            this.chavePrivada = key.getPrivate();//.getEncoded();
+            this.chavePublica = key.getPublic();//.getEncoded();
             //File chavePrivadaFile = new File(PATH_CHAVE_PRIVADA);
             //File chavePublicaFile = new File(PATH_CHAVE_PUBLICA);
             
@@ -92,13 +92,15 @@ public class GeraChave {
         return new String(dectyptedText);
     }
 
-    public byte[] getChavePrivada() {
-        return this.chavePrivada;
+    public PrivateKey getChavePrivada() {
+        return chavePrivada;
     }
 
-    public byte[] getChavePublica() {
-        return this.chavePublica;
+    public PublicKey getChavePublica() {
+        return chavePublica;
     }
+
+   
     
     public PublicKey carregaChavePublica(byte[] bytes) throws NoSuchAlgorithmException, InvalidKeySpecException{
         PublicKey publicKey = 
