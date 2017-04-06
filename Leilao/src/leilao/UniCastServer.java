@@ -133,12 +133,8 @@ public class UniCastServer extends Thread {
                         // Encrypting buyer's ID with Seller's Private Key
                         String text = "" + id;
                         GeraChave gC = new GeraChave();
-                        //byte[] encryptedText = gC.criptografa(text,chavePublica);
+                        byte[] encryptedText = gC.criptografa(text,InitSystem.chave_publica);
                         
-                        // *********************************************
-                        // Packing mining and validation message.
-                        Timestamp date = new Timestamp(System.currentTimeMillis());
-                        long ts = date.getTime();
                         
                         ByteArrayOutputStream bos = new ByteArrayOutputStream(10);
                         ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -150,7 +146,6 @@ public class UniCastServer extends Thread {
                         oos.writeInt(bAmount);
                         oos.writeInt(encryptedText.length);
                         oos.write(encryptedText);
-                        oos.writeLong(ts);
                         oos.flush();
                         
                         // Converte o objeto para uma array de bytes e envia por datagrama
@@ -162,7 +157,6 @@ public class UniCastServer extends Thread {
                         System.out.print(" Buyer ID: " + id);
                         System.out.print(", Seller ID: " + process.getId());
                         System.out.print(", Coin Amount: " + bAmount);
-                        System.out.println(", Transaction ID: "+ ts);
                         System.out.println("");
                         s.send(messageOut);
                         break;

@@ -40,8 +40,8 @@ import sun.rmi.transport.tcp.TCPChannel;
 public class InitSystem {
 
     static ArrayList<Process> processList = new ArrayList<>();
-    static PrivateKey chave_privada = null;
-
+    
+    static PublicKey chave_publica = null;
     public static void main(String[] args) throws InterruptedException, AWTException, NoSuchAlgorithmException, InvalidKeySpecException, UnknownHostException, IOException {
 
         int PORT_MULTICAST = 6789;
@@ -50,7 +50,8 @@ public class InitSystem {
         DatagramSocket socket = null;
         Process process = null;
         GeraChave gera_chave = null;
-        PublicKey chave_publica = null;
+        PrivateKey chave_privada = null;
+
 
         InetAddress group = InetAddress.getByName(IP_MULTICAST);
         s = new MulticastSocket(PORT_MULTICAST);
