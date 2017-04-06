@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.copel.distribuidos;
+package leilao;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -24,10 +24,7 @@ public class ReadingThread implements Runnable {
     Scanner scan = new Scanner(System.in);
     MulticastSocket s;
     InetAddress group;
-    String menssagemSaida;
 
-    
-    
     @Override
     public void run() {
 
@@ -48,13 +45,10 @@ public class ReadingThread implements Runnable {
                     DatagramPacket messageIn = new DatagramPacket(buffer, buffer.length);
                     try {
                         s.receive(messageIn);
-                       this.menssagemSaida = new String(messageIn.getData());
-                       
                     } catch (IOException ex) {
                         Logger.getLogger(ReadingThread.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                   
-                  //  System.out.println("Received:" + menssagemSaida);
+                    System.out.println("Received:" + new String(messageIn.getData()));
                     
                     
                 } else {
@@ -63,8 +57,6 @@ public class ReadingThread implements Runnable {
                     break;
 
                 }
-              // Thread.yield();
-               
             }
         } catch (SocketException e) {
             System.out.println("Socket: " + e.getMessage());
@@ -74,15 +66,6 @@ public class ReadingThread implements Runnable {
             if (s != null) {
                 s.close();
             }
-        }
-    }
-    
-    public String getMenssagemSaida() {
-        
-        if(menssagemSaida!=null){
-        return menssagemSaida;
-        }else{
-        return "-1";
         }
     }
 

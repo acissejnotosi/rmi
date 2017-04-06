@@ -3,9 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.copel.distribuidos;
+package leilao;
 
-
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -27,7 +29,7 @@ public class GeraChave {
     
     
     public static final String ALGORITHM = "RSA";
-
+   
     /**
      * Gera a chave que contém um par de chave Privada e Pública usando 1025
      * bytes. Armazena o conjunto de chaves nos arquivos private.key e
@@ -42,12 +44,17 @@ public class GeraChave {
 
             this.chavePrivada = key.getPrivate().getEncoded();
             this.chavePublica = key.getPublic().getEncoded();
-
+            //File chavePrivadaFile = new File(PATH_CHAVE_PRIVADA);
+            //File chavePublicaFile = new File(PATH_CHAVE_PUBLICA);
+            
+           
+           
         } catch (NoSuchAlgorithmException e) {
         }
 
     }
 
+  
     /**
      * Criptografa o texto puro usando chave pública.
      */
@@ -65,8 +72,6 @@ public class GeraChave {
 
         return cipherText;
     }
-   
-
 
     /**
      * Decriptografa o texto puro usando chave privada.

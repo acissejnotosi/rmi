@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.copel.distribuidos;
+package leilao;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -24,10 +24,6 @@ public class WritingThread implements Runnable {
     String leitura1 = " ";
     Scanner scan = new Scanner(System.in);
 
-    public void setLeitura1(String leitura1) {
-        this.leitura1 = leitura1;
-    }
-    
     @Override
     public void run() {
 
@@ -39,8 +35,8 @@ public class WritingThread implements Runnable {
 
             while (true) {
 
-                if (!(leitura1.equals(" ")) && !(leitura1.equals("sair"))){
-                    
+                if (!(leitura1.equals("sair")) ){
+                    leitura1 = scan.nextLine();
 
                     if (!"sair".equals(leitura1)) {
                         byte[] m = leitura1.getBytes();
@@ -52,13 +48,10 @@ public class WritingThread implements Runnable {
                         }
 
                     }
-                } else if(leitura1.equals("sair")) {
+                } else {
                     s.leaveGroup(group);
                     break;
                 }
-                
-               //      Thread.yield();
-              
             }
 
         } catch (SocketException e) {

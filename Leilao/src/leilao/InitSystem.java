@@ -5,9 +5,16 @@
  */
 package leilao;
 
+
 import java.awt.AWTException;
 import java.awt.Robot;
+
 import java.lang.management.ManagementFactory;
+
+import java.nio.charset.StandardCharsets;
+
+
+
 import java.util.HashMap;
 import java.util.Random;
 import java.util.Scanner;
@@ -21,11 +28,14 @@ import sun.rmi.transport.tcp.TCPChannel;
  */
 public class InitSystem {
     
+
+
         public static void main (String[] args) throws InterruptedException, AWTException {
-                 
-          
+
+        //   Inicio inicio = new Inicio();
+         
            String name = ManagementFactory.getRuntimeMXBean().getName();
-           System.out.println("Name =" + name);
+         //  System.out.println("Name =" + name);
            GeraChave gchave = new GeraChave();
            gchave.geraChave();   
            byte[] chavePrivada = gchave.getChavePrivada();
@@ -37,11 +47,37 @@ public class InitSystem {
            
            
            WritingThread wt = new WritingThread();        
+
            ReadingThread rt = new ReadingThread();         
+
            new Thread(wt).start();
            new Thread(rt).start();
-        
-            Robot robot =  new Robot();
+
+           
+
+            wt.setLeitura1(name + " " + new String(chavePublica, StandardCharsets.UTF_8 ));
+            
+  
+             
+            StringToOtherType strToOType = new StringToOtherType();
+            while("-1".equals(rt.getMenssagemSaida()))
+            {
+                System.out.println("Delay para recebimento da mensagem em readingThread");
+            }
+            
+            System.out.println("Resultado : " + rt.getMenssagemSaida());
+            strToOType.stringToNomeChave(rt.getMenssagemSaida());
+            
+           
+            if(leiloero.verificaSeExisteChave(strToOType.getNomeGuest()) == false){
+            leiloero.setHashNomeChavePublica(strToOType.getNomeGuest(),strToOType.getChavePublicaGuest());
+            }
+       
+            for(String nome : leiloero.getHashNomeChavePublica().keySet()){
+            System.out.println("["+ nome + "] = " + StringToOtherType.bytesToHex(leiloero.getHashNomeChavePublica().get(nome)));
+                    }
+           
+ Robot robot =  new Robot();
           
         System.out.println(name  );
          
@@ -58,6 +94,6 @@ public class InitSystem {
 //          TCPC.enviarMensagem("oláaaaaaaaaaaaaaaaaaaaaa");
 //        
          
-                  
+
         }
 }
