@@ -14,10 +14,10 @@ import java.sql.Timestamp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
 /**
  *
- * @author Samuel Pelegrinello Caipers Sistemas Distribuidos - Tarefa 01
- *
+ * @author Jessica
  */
 public class UniCastServer extends Thread {
 
