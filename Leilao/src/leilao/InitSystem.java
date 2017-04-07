@@ -52,32 +52,32 @@ public class InitSystem {
 
         // ********************************************
         // Receiving data from user
-        int id;
-        int port;
+        String id;
+        String port;
         String nomeProduto;
-        int idProduto;
+        String idProduto;
         String descProduto;
-        int precoProduto;
-        int tempoFinal = 120000; //para que cada produto tenha um tempo de leilão de 2 min
+        String precoProduto;
+        String tempoFinal = "120000"; //para que cada produto tenha um tempo de leilão de 2 min
 
         Scanner in = new Scanner(System.in);
         System.out.println("Informe o número do participante:");
-        id = Integer.parseInt(in.nextLine().trim());
+        id =  in.nextLine();
 
         System.out.println("Informe a porta para comunicação UNICAST:");
-        port = Integer.parseInt(in.nextLine().trim());
+        port = in.nextLine();
 
         System.out.println("Informe o nome do produto:");
-        nomeProduto = (in.nextLine().trim());
+        nomeProduto = in.nextLine();
 
         System.out.println("Informe o id do produto:");
-        idProduto = Integer.parseInt(in.nextLine().trim());
+        idProduto = in.nextLine();
 
         System.out.println("Informe descricao do produto:");
-        descProduto = (in.nextLine().trim());
+        descProduto = in.nextLine();
 
         System.out.println("Informe o preço do produto:");
-        precoProduto = Integer.parseInt(in.nextLine().trim());
+        precoProduto = in.nextLine();
 
         // ********************************************
         // Generating keys for this process
@@ -94,13 +94,13 @@ public class InitSystem {
         ObjectOutputStream oos = new ObjectOutputStream(bos);
 
         oos.writeChar('N');
-        oos.writeInt(id);
-        oos.writeInt(port);
+        oos.writeUTF(id);
+        oos.writeUTF(port);
         oos.writeObject(chave_publica);
         oos.writeUTF(nomeProduto);
-        oos.writeInt(idProduto);
+        oos.writeUTF(idProduto);
         oos.writeUTF(descProduto);
-        oos.writeInt(precoProduto);
+        oos.writeUTF(precoProduto);
         oos.flush();
 
         // *********************************************

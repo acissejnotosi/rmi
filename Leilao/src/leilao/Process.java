@@ -15,16 +15,16 @@ import java.util.ArrayList;
  */
 class Process implements Serializable {
 
-    private final int id;
-    private final int port;
+    private final String id;
+    private final String port;
     private final String nomeProduto;
-    private final int idProduto;
+    private final String idProduto;
     private final String descProduto;
-    private final int precoProduto;
+    private final String precoProduto;
     private final PublicKey chavePublica;
     static ArrayList<leilao> listaLeilao = new ArrayList<>();
 
-    public Process(int id, int port, PublicKey chavePublica, String nomeProduto, int idProduto, String descProduto, int precoProduto) {
+    public Process(String id, String port, PublicKey chavePublica, String nomeProduto, String idProduto, String descProduto, String precoProduto) {
         this.id = id;
         this.port = port;
         this.chavePublica = chavePublica;
@@ -34,12 +34,25 @@ class Process implements Serializable {
         this.precoProduto = precoProduto;
 
     }
-    
+
+    public static void setListaLeilao(ArrayList<leilao> listaLeilao) {
+        Process.listaLeilao = listaLeilao;
+    }
+
+
+    public String getId() {
+        return id;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
     public String getNomeProduto() {
         return nomeProduto;
     }
 
-    public int getIdProduto() {
+    public String getIdProduto() {
         return idProduto;
     }
 
@@ -47,10 +60,13 @@ class Process implements Serializable {
         return descProduto;
     }
 
-    public int getPrecoProduto() {
+    public String getPrecoProduto() {
         return precoProduto;
     }
 
+    public PublicKey getChavePublica() {
+        return chavePublica;
+    }
     public static ArrayList<leilao> getListaLeilao() {
         return listaLeilao;
     }
@@ -59,15 +75,7 @@ class Process implements Serializable {
         return "Participante: " + id + ", Porta: " + port;
     }
 
-    public int getId() {
-        return id;
-    }
+  
 
-    public int getPort() {
-        return port;
-    }
-
-    public PublicKey getPubKey() {
-        return chavePublica;
-    }
+    
 }

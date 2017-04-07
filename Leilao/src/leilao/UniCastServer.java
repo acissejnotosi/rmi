@@ -41,7 +41,7 @@ public class UniCastServer extends Thread {
         // ********************************************
         // Creates the UDP Socket in the port of the process.
         try {
-            socket = new DatagramSocket(process.getPort());
+        socket = new DatagramSocket(Integer.parseInt(process.getPort()));
         } catch (IOException ex) {
             System.out.println("Creation of socket: " + ex);
         }
@@ -67,13 +67,13 @@ public class UniCastServer extends Thread {
 
         while (true) {
             try {
-                int pid;
-                int port;
+                String pid;
+                String port;
                 PublicKey pubKey;
                 String nomeProduto;
-                int     idProduto;
+                String idProduto;
                 String descProduto;
-                int     precoProduto;
+                String precoProduto;
 
                 // ********************************************
                 // Receiving an UDP message
@@ -93,17 +93,15 @@ public class UniCastServer extends Thread {
 
                     case ('N'):
                         // *********************************************
-                        // Unpacking rest of the message
-                        
-                        pid = ois.readInt();
-                        port = ois.readInt();
-                        PublicKey chavePublica = (PublicKey) ois.readObject();
-                        nomeProduto = ois.readUTF();
-                         idProduto = ois.readInt();
-                        System.out.println("IDprod: " + idProduto);
-                         descProduto = ois.readUTF();
-                         precoProduto = ois.readInt();
-                    
+                        // Descompactando messagem
+                            pid = ois.readUTF();
+                            port = ois.readUTF();
+                            PublicKey chavePublica = (PublicKey) ois.readObject();
+                            nomeProduto = ois.readUTF();
+                            idProduto = ois.readUTF();
+                            descProduto = ois.readUTF();
+                            precoProduto = ois.readUTF();
+          
                         // *********************************************
                         // Creating new process and add in the list of process
                         Process novoProcesso = new Process(pid, port, chavePublica, nomeProduto, idProduto, descProduto, precoProduto);

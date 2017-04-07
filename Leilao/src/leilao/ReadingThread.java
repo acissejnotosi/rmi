@@ -20,6 +20,7 @@ import java.security.PublicKey;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static leilao.InitSystem.processList;
 
 /**
  *
@@ -81,20 +82,20 @@ public class ReadingThread extends Thread {
                 switch (type) {
 
                     case 'N':
-                        int pid = ois.readInt();
+                        String pid = ois.readUTF();
 
                         // if msg id is of the this process, ignores it.
-                        if (pid == process.getId()) {
+                        if (pid.equals(process.getId()) ) {
                             break;
                         } else {
                             // *********************************************
                             // Unpacking rest of the message
-                            int port = ois.readInt();
+                            String port = ois.readUTF();
                             PublicKey chavePublica = (PublicKey) ois.readObject();
                             String nomeProduto = ois.readUTF();
-                            int idProduto = ois.readInt();
+                            String idProduto = ois.readUTF();
                             String descProduto = ois.readUTF();
-                            int precoProduto = ois.readInt();
+                            String precoProduto = ois.readUTF();
 
                             // *********************************************
                             // Creating new process and add in the list of process
@@ -107,18 +108,18 @@ public class ReadingThread extends Thread {
                             ByteArrayOutputStream bos = new ByteArrayOutputStream(10);
                             ObjectOutputStream oos = new ObjectOutputStream(bos);
                             oos.writeChar('N');
-                            oos.writeInt(novoProcesso.getId());
-                            oos.writeInt(novoProcesso.getPort());
-                            oos.writeObject(novoProcesso.getPubKey());
-                            oos.writeUTF(novoProcesso.getNomeProduto());
-                            oos.writeObject(novoProcesso.getIdProduto());
-                            oos.writeUTF(novoProcesso.getDescProduto());
-                            oos.writeObject(novoProcesso.getPrecoProduto());
+                            oos.writeUTF(process.getId());
+                            oos.writeUTF(process.getPort());
+                            oos.writeObject(process.getChavePublica());
+                            oos.writeUTF(process.getNomeProduto());
+                            oos.writeUTF(process.getIdProduto());
+                            oos.writeUTF(process.getDescProduto());
+                            oos.writeUTF(process.getPrecoProduto());
 
                             oos.flush();
 
-                            byte[] output = bos.toByteArray();
-                            DatagramPacket messageOut = new DatagramPacket(output, output.length, messageIn.getAddress(), port);
+                             byte[] output = bos.toByteArray();
+                            DatagramPacket messageOut = new DatagramPacket(output, output.length, messageIn.getAddress(),Integer.parseInt(port));
                             System.out.println("");
                             System.out.print("[MULTICAST - RECEIVE]");
                             System.out.print(" ID do participante: " + pid);
