@@ -67,11 +67,13 @@ public class UniCastServer extends Thread {
 
         while (true) {
             try {
-                int id;
-
+                int pid;
+                int port;
                 PublicKey pubKey;
-                int coinAmount;
-                int coinPrice;
+                String nomeProduto;
+                int     idProduto;
+                String descProduto;
+                int     precoProduto;
 
                 // ********************************************
                 // Receiving an UDP message
@@ -92,19 +94,23 @@ public class UniCastServer extends Thread {
                     case ('N'):
                         // *********************************************
                         // Unpacking rest of the message
-                        int pid = ois.readInt();
-                        int port = ois.readInt();
+                        
+                        pid = ois.readInt();
+                        port = ois.readInt();
                         PublicKey chavePublica = (PublicKey) ois.readObject();
-                        String nomeProduto = ois.toString();
-                        int idProduto = ois.readInt();
-                        String descProduto = ois.toString();
-                        int precoProduto = ois.readInt();
-                      
+                        nomeProduto = ois.readUTF();
+                         idProduto = ois.readInt();
+                        System.out.println("IDprod: " + idProduto);
+                         descProduto = ois.readUTF();
+                         precoProduto = ois.readInt();
+                    
                         // *********************************************
                         // Creating new process and add in the list of process
                         Process novoProcesso = new Process(pid, port, chavePublica, nomeProduto, idProduto, descProduto, precoProduto);
                         InitSystem.processList.add(novoProcesso);
-
+                        
+                        System.out.println("");
+                        System.out.print("[UNICAST - RECEIVE]");
                         System.out.print(" ID do participante: " + pid);
                         System.out.print(", Porta: " + port);
                         System.out.print(", Chave publica: - ");
@@ -112,50 +118,11 @@ public class UniCastServer extends Thread {
                         System.out.println(",ID Produto: " + idProduto);
                         System.out.print(",Descricao do produto: " + descProduto);
                         System.out.println(",Preco do produto: " + precoProduto);
-
+                           
                         break;
 
                     case ('B'):
-                        // *********************************************
-                        // Unpacking rest of the message
-                        id = ois.readInt();
-                        port = ois.readInt();
-                        int bAmount = ois.readInt();
-
-                        System.out.println("");
-                        System.out.print("[UNICAST - RECEIVE]");
-                        System.out.println(" Buying Request from process: " + id);
-
-                        // *********************************************
-                        // Encrypting buyer's ID with Seller's Private Key
-                        String text = "" + id;
-                        GeraChave gC = new GeraChave();
-                        byte[] encryptedText = gC.criptografa(text, InitSystem.chave_publica);
-
-                        ByteArrayOutputStream bos = new ByteArrayOutputStream(10);
-                        ObjectOutputStream oos = new ObjectOutputStream(bos);
-                        oos.writeChar('M');
-                        oos.writeInt(id);
-                        oos.writeInt(port);
-                        oos.writeInt(process.getId());
-                        oos.writeInt(process.getPort());
-                        oos.writeInt(bAmount);
-                        oos.writeInt(encryptedText.length);
-                        oos.write(encryptedText);
-                        oos.flush();
-
-                        // Converte o objeto para uma array de bytes e envia por datagrama
-                        byte[] msg = bos.toByteArray();
-                        DatagramPacket messageOut = new DatagramPacket(msg, msg.length, group, MULT_PORT);
-
-                        System.out.print("[MULTICAST SEND]");
-                        System.out.print(" Sending mining and validation request");
-                        System.out.print(" Buyer ID: " + id);
-                        System.out.print(", Seller ID: " + process.getId());
-                        System.out.print(", Coin Amount: " + bAmount);
-                        System.out.println("");
-                        s.send(messageOut);
-                        break;
+                         break;
                 }
             } catch (IOException ex) {
                 System.out.println("Unicast Exception");

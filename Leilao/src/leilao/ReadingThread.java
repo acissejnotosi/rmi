@@ -91,9 +91,9 @@ public class ReadingThread extends Thread {
                             // Unpacking rest of the message
                             int port = ois.readInt();
                             PublicKey chavePublica = (PublicKey) ois.readObject();
-                            String nomeProduto = ois.toString();
+                            String nomeProduto = ois.readUTF();
                             int idProduto = ois.readInt();
-                            String descProduto = ois.toString();
+                            String descProduto = ois.readUTF();
                             int precoProduto = ois.readInt();
 
                             // *********************************************
@@ -110,9 +110,9 @@ public class ReadingThread extends Thread {
                             oos.writeInt(novoProcesso.getId());
                             oos.writeInt(novoProcesso.getPort());
                             oos.writeObject(novoProcesso.getPubKey());
-                            oos.writeObject(novoProcesso.getNomeProduto());
+                            oos.writeUTF(novoProcesso.getNomeProduto());
                             oos.writeObject(novoProcesso.getIdProduto());
-                            oos.writeObject(novoProcesso.getDescProduto());
+                            oos.writeUTF(novoProcesso.getDescProduto());
                             oos.writeObject(novoProcesso.getPrecoProduto());
 
                             oos.flush();

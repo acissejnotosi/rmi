@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Scanner;
 
-
 /**
  *
  * @author allan
@@ -33,8 +32,9 @@ import java.util.Scanner;
 public class InitSystem {
 
     static ArrayList<Process> processList = new ArrayList<>();
-    
+
     static PublicKey chave_publica = null;
+
     public static void main(String[] args) throws InterruptedException, AWTException, NoSuchAlgorithmException, InvalidKeySpecException, UnknownHostException, IOException {
 
         int PORT_MULTICAST = 6789;
@@ -44,7 +44,6 @@ public class InitSystem {
         Process process = null;
         GeraChave gera_chave = null;
         PrivateKey chave_privada = null;
-
 
         InetAddress group = InetAddress.getByName(IP_MULTICAST);
         s = new MulticastSocket(PORT_MULTICAST);
@@ -75,7 +74,7 @@ public class InitSystem {
         idProduto = Integer.parseInt(in.nextLine().trim());
 
         System.out.println("Informe descricao do produto:");
-        descProduto = in.nextLine();
+        descProduto = (in.nextLine().trim());
 
         System.out.println("Informe o preço do produto:");
         precoProduto = Integer.parseInt(in.nextLine().trim());
@@ -98,38 +97,35 @@ public class InitSystem {
         oos.writeInt(id);
         oos.writeInt(port);
         oos.writeObject(chave_publica);
-        oos.writeChars(nomeProduto);
+        oos.writeUTF(nomeProduto);
         oos.writeInt(idProduto);
-        oos.writeChars(descProduto);
+        oos.writeUTF(descProduto);
         oos.writeInt(precoProduto);
         oos.flush();
 
         // *********************************************
         // Initializing multicast and unicast communication
-           ReadingThread multCastComm = new ReadingThread(process,IP_MULTICAST, PORT_MULTICAST);
-            multCastComm.start();
-            UniCastServer uniCastComm = new UniCastServer(process, IP_MULTICAST, PORT_MULTICAST);
-            uniCastComm.start();
-            
-            // *********************************************
-            // Sending multicast notification of its presence.
-            byte[] m = bos.toByteArray();
-            DatagramPacket messageOut = new DatagramPacket(m, m.length, group, PORT_MULTICAST);
- 
-            System.out.println("\n[MULTICAST SEND] Sending information about this new process:");
-            System.out.print("[MULTICAST SEND]");
-           System.out.print(" ID do participante: " + id);
-                            System.out.print(", Porta: " + port);
-                            System.out.print(", Chave publica: - ");
-                            System.out.print(", Nome produto: " + nomeProduto);
-                            System.out.println(",ID Produto: " + idProduto);
-                            System.out.print(",Descricao do produto: " + descProduto);
-                            System.out.println(",Preco do produto: " + precoProduto);
+        ReadingThread multCastComm = new ReadingThread(process, IP_MULTICAST, PORT_MULTICAST);
+        multCastComm.start();
+        UniCastServer uniCastComm = new UniCastServer(process, IP_MULTICAST, PORT_MULTICAST);
+        uniCastComm.start();
 
-            s.send(messageOut);
-        
-       
-        
+        // *********************************************
+        // Sending multicast notification of its presence.
+        byte[] m = bos.toByteArray();
+        DatagramPacket messageOut = new DatagramPacket(m, m.length, group, PORT_MULTICAST);
+
+        System.out.println("\n[MULTICAST SEND] Sending information about this new process:");
+        System.out.print("[MULTICAST SEND]");
+        System.out.print(" ID do participante: " + id);
+        System.out.print(", Porta: " + port);
+        System.out.print(", Chave publica: - ");
+        System.out.print(", Nome produto: " + nomeProduto);
+        System.out.println(",ID Produto: " + idProduto);
+        System.out.print(",Descricao do produto: " + descProduto);
+        System.out.println(",Preco do produto: " + precoProduto);
+        s.send(messageOut);
+
         // *********************************************
         // Interaction phase.
         while (true) {
@@ -147,34 +143,33 @@ public class InitSystem {
             Iterator it;
             switch (cmd) {
 
-                case "P":
+                case "B":
                     // check if there are more than 2 active processes
                     if (InitSystem.processList.size() <= 2) {
                         System.out.println("Must have at least 4 ative processes to buy coins");
                         break;
                     }
 
-                  //  byte[] m = bos.toByteArray();
-                  // DatagramPacket messageOut = new DatagramPacket(m, m.length, group, PORT_MULTICAST);
-
+                    //  byte[] m = bos.toByteArray();
+                    // DatagramPacket messageOut = new DatagramPacket(m, m.length, group, PORT_MULTICAST);
                     System.out.println("\n[MULTICAST SEND] Sending information about this new process:");
                     System.out.print("[MULTICAST SEND]");
                     System.out.print(" ID: " + id);
                     System.out.print(", Port: " + port);
                     System.out.print(", Public Key: Intern");
-              //      System.out.print(", Coin Amount: " + coinAmount);
-               //     System.out.println(", Coin Price: " + coinPrice);
-                   s.send(messageOut);
+                    //      System.out.print(", Coin Amount: " + coinAmount);
+                    //     System.out.println(", Coin Price: " + coinPrice);
+                    s.send(messageOut);
 
                     break;
-                case "L":    
-                 System.out.println("List of Process:");
-                        it = InitSystem.processList.iterator();
-                        while (it.hasNext()) {
-                            Process p = (Process) it.next();
-                            System.out.println(p.imprimaProcessos());
-                        }
-                        break;
+                case "L":
+                    System.out.println("List of Process:");
+                    it = InitSystem.processList.iterator();
+                    while (it.hasNext()) {
+                        Process p = (Process) it.next();
+                        System.out.println(p.imprimaProcessos());
+                    }
+                    break;
                 case "E":
                     System.out.println("Bye!");
                     s.leaveGroup(group);
