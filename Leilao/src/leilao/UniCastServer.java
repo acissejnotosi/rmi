@@ -13,6 +13,8 @@ import java.security.PublicKey;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static leilao.InitSystem.procesosInteresados;
+import static leilao.InitSystem.processList;
 
 
 /**
@@ -120,6 +122,37 @@ public class UniCastServer extends Thread {
                         break;
 
                     case ('B'):
+                        // Unpacking rest of the message
+                        pid = ois.readUTF();
+                        port = ois.readUTF();
+                        String lance = ois.readUTF();
+                        idProduto = ois.readUTF();
+                   
+                        System.out.println("");    
+                        System.out.print("[UNICAST - RECEIVE]");
+                        System.out.println("Requisicao de lance de processo: " + pid);
+                        
+                        long start = System.currentTimeMillis();
+//                        long finish = System.currentTimeMillis();
+//                        long total = finish - start;
+                       
+                        for(Process p: processList){
+                            if (p.getId().equals(pid)) {
+                                p.setPrecoProduto(lance);
+                                 break;
+                            }
+                        }
+                        //setar controlador de lances
+                        Controle caux = null;
+                        for(Controle c:  procesosInteresados){
+                            if (c.getProdutoId().equals(idProduto)) {
+                                   c.setLancadorId(pid);
+                                   c.setTempo(start);
+                                   break;
+                            }
+                        }
+                        Conometro cono = new Conometro(pid,port,idProduto);
+                        cono.start();
                          break;
                 }
             } catch (IOException ex) {

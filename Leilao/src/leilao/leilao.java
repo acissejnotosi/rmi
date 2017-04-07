@@ -12,7 +12,9 @@ package leilao;
 public class leilao {
     private long leilaoId;
     private int compradorId; 
-    private int leiloeroId; 
+    private int leiloeroId;
+    private int lance;
+    private int valorAtual;
    
     private String status; // status of transaction
     
@@ -35,8 +37,6 @@ public class leilao {
         }
     }
     
- 
-
     public long getLeilaoId() {
         return leilaoId;
     }
@@ -49,7 +49,21 @@ public class leilao {
         return leiloeroId;
     }
 
-    
+    public int getLance() {
+        return lance;
+    }
+
+    public void setLance(int lance) {
+        this.lance = lance;
+    }
+
+    public int getValorAtual() {
+        return valorAtual;
+    }
+
+    public void setValorAtual(int valorAtual) {
+        this.valorAtual = valorAtual;
+    }
    
     
     public String getStatus() {

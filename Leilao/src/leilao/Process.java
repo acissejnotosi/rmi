@@ -15,13 +15,13 @@ import java.util.ArrayList;
  */
 class Process implements Serializable {
 
-    private final String id;
-    private final String port;
-    private final String nomeProduto;
-    private final String idProduto;
-    private final String descProduto;
-    private final String precoProduto;
-    private final PublicKey chavePublica;
+    private  String id;
+    private  String port;
+    private  String nomeProduto;
+    private  String idProduto;
+    private  String descProduto;
+    private  String precoProduto;
+    private  PublicKey chavePublica;
     static ArrayList<leilao> listaLeilao = new ArrayList<>();
 
     public Process(String id, String port, PublicKey chavePublica, String nomeProduto, String idProduto, String descProduto, String precoProduto) {
@@ -75,7 +75,35 @@ class Process implements Serializable {
         return "Participante: " + id + ", Porta: " + port;
     }
 
-  
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public void setNomeProduto(String nomeProduto) {
+        this.nomeProduto = nomeProduto;
+    }
+
+    public void setIdProduto(String idProduto) {
+        this.idProduto = idProduto;
+    }
+
+    public void setDescProduto(String descProduto) {
+        this.descProduto = descProduto;
+    }
+
+    public void setPrecoProduto(String precoProduto) {
+        this.precoProduto = precoProduto;
+    }
+
+    public void setChavePublica(PublicKey chavePublica) {
+        this.chavePublica = chavePublica;
+    }
+    
+    
 
     
 }
