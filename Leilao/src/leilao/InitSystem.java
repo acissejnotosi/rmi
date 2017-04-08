@@ -182,14 +182,14 @@ public class InitSystem {
                         String sNomeProducto = paux.getNomeProduto();
                         String sDescProduto  = paux.getDescProduto();
                         String sPreco = paux.getPrecoProduto();
-                         
+                        System.out.println("-------------____"+sPreco);
+                        
                         
                         
                         System.out.println("Qual valor do seu lance");
                         String lance = in.nextLine();
                         
-                    
-                      
+                        System.out.println("___"+lance);
                         // 
                         if (Integer.parseInt(sPreco)> Integer.parseInt(lance) ) {
                             System.out.println("Seller has not enough coins to sell!");

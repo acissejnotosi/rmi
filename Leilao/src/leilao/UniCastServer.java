@@ -122,7 +122,7 @@ public class UniCastServer extends Thread {
                         break;
 
                     case ('B'):
-                        // Unpacking rest of the message
+                           //desenpacota mesn
                         pid = ois.readUTF();
                         port = ois.readUTF();
                         String lance = ois.readUTF();
@@ -151,8 +151,8 @@ public class UniCastServer extends Thread {
                                    break;
                             }
                         }
-                        Conometro cono = new Conometro(pid,port,idProduto);
-                        cono.start();
+                        Cronometro cono = new Cronometro(pid,process.getPort().toString(),port.toString(),idProduto);
+                        cono.start();    
                          break;
                 }
             } catch (IOException ex) {

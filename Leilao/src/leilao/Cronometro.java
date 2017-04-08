@@ -14,6 +14,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.SocketException;
 import java.security.PublicKey;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,21 +23,22 @@ import java.util.logging.Logger;
  *
  * @author allan
  */
-public class Conometro extends Thread {
+public class Cronometro extends Thread {
     
     DatagramSocket socket = null;
      String pid;
-     String port;
+     String myport;
+     String hostport;
      PublicKey pubKey;
      String nomeProduto;
 
-    public Conometro(String pid, String port, String nomeProduto) {
+    public Cronometro(String pid, String myport, String hostport, String nomeProduto) {
         this.pid = pid;
-        this.port = port;
+        this.myport = myport;
+        this.hostport = hostport;
         this.nomeProduto = nomeProduto;
+             
     }
-   
-     
     @Override
     public void run() {
         
@@ -48,33 +50,33 @@ public class Conometro extends Thread {
            System.out.println("passei");
             try { 
                 int i=0;
-                while (i<10) {          
+                while (i<5) {          
                     i++;
-                    Thread.sleep(10000);  
+                    Thread.sleep(10000); 
                 }
-                
+                 System.out.println("saii");
                  ByteArrayOutputStream bos1 = new ByteArrayOutputStream(10);
                  ObjectOutputStream oos1 = new ObjectOutputStream(bos1);
        
-//                 oos1.writeUTF(pid);
-//                 oos1.writeUTF(port);
-//                 oos1.writeUTF(nomeProduto);
-//                 oos1.flush();3213
+                 oos1.writeUTF(pid);
+                 oos1.writeUTF(myport);
+                 oos1.writeUTF(nomeProduto);
+                 oos1.flush();
                 
                 byte[] output = bos1.toByteArray();
-                        DatagramPacket messageOut1 = new DatagramPacket(output, output.length, InetAddress.getLocalHost(), Integer.parseInt(port));
-                        System.out.println("");    
-                        System.out.print("[UNICAST - SEND]");
-                        System.out.print(" Enviando Lance " + pid);
-                        System.out.print(" Comprador  " + nomeProduto);
+                DatagramPacket messageOut1 = new DatagramPacket(output, output.length, InetAddress.getLocalHost(), Integer.parseInt(hostport));
+                System.out.println("");    
+                System.out.print("[UNICAST - SEND]");
+                System.out.print(" Voce venceu o Leilao " + pid);
+                System.out.print(" Proudut0  " + nomeProduto);
                         
                 socket.send(messageOut1);
-                System.out.println("sauii");
+                System.out.println("");
             }
               
             catch (InterruptedException e) {  
             } catch (IOException ex) {  
-            Logger.getLogger(Conometro.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Cronometro.class.getName()).log(Level.SEVERE, null, ex);
         }  
         }  
   
