@@ -69,7 +69,7 @@ public class UniCastServer extends Thread {
             try {
                 int pid;
                 int port;
-                PublicKey pubKey;
+                PublicKey chavePublica;
                 String nomeProduto;
                 int     idProduto;
                 String descProduto;
@@ -79,6 +79,7 @@ public class UniCastServer extends Thread {
                 // Receiving an UDP message
                 buffer = new byte[1024];
                 messageIn = new DatagramPacket(buffer, buffer.length);
+            
                 socket.receive(messageIn);
 
                 bis = new ByteArrayInputStream(buffer);
@@ -97,9 +98,11 @@ public class UniCastServer extends Thread {
                         
                         pid = ois.readInt();
                         port = ois.readInt();
-                        PublicKey chavePublica = (PublicKey) ois.readObject();
+                        chavePublica = (PublicKey) ois.readObject();
                         nomeProduto = ois.readUTF();
+                        System.out.println("Nome produto: " + nomeProduto);
                          idProduto = ois.readInt();
+                          System.out.println("oi ");
                         System.out.println("IDprod: " + idProduto);
                          descProduto = ois.readUTF();
                          precoProduto = ois.readInt();

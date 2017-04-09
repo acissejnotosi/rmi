@@ -107,17 +107,18 @@ public class ReadingThread extends Thread {
                             ByteArrayOutputStream bos = new ByteArrayOutputStream(10);
                             ObjectOutputStream oos = new ObjectOutputStream(bos);
                             oos.writeChar('N');
-                            oos.writeInt(novoProcesso.getId());
-                            oos.writeInt(novoProcesso.getPort());
-                            oos.writeObject(novoProcesso.getPubKey());
-                            oos.writeUTF(novoProcesso.getNomeProduto());
-                            oos.writeObject(novoProcesso.getIdProduto());
-                            oos.writeUTF(novoProcesso.getDescProduto());
-                            oos.writeObject(novoProcesso.getPrecoProduto());
+                            oos.writeInt(process.getId());
+                            oos.writeInt(process.getPort());
+                            oos.writeObject(process.getPubKey());
+                            oos.writeUTF(process.getNomeProduto());
+                            oos.writeObject(process.getIdProduto());
+                            oos.writeUTF(process.getDescProduto());
+                            oos.writeObject(process.getPrecoProduto());
 
                             oos.flush();
 
                             byte[] output = bos.toByteArray();
+                            System.out.println(" Tamanhao da saída: " + output.length);
                             DatagramPacket messageOut = new DatagramPacket(output, output.length, messageIn.getAddress(), port);
                             System.out.println("");
                             System.out.print("[MULTICAST - RECEIVE]");
@@ -131,13 +132,13 @@ public class ReadingThread extends Thread {
 
                             System.out.println("");
                             System.out.print("[UNICAST - SEND]");
-                            System.out.print(" ID do participante: " + pid);
-                            System.out.print(", Porta: " + port);
+                            System.out.print(" ID do participante: " + process.getId());
+                            System.out.print(", Porta: " + process.getPort());
                             System.out.print(", Chave publica: - ");
-                            System.out.print(", Nome produto: " + nomeProduto);
-                            System.out.println(",ID Produto: " + idProduto);
-                            System.out.print(",Descricao do produto: " + descProduto);
-                            System.out.println(",Preco do produto: " + precoProduto);
+                            System.out.print(", Nome produto: " + process.getNomeProduto());
+                            System.out.println(",ID Produto: " + process.getIdProduto());
+                            System.out.print(",Descricao do produto: " + process.getDescProduto());
+                            System.out.println(",Preco do produto: " + process.getPrecoProduto());
 
                             socket.send(messageOut);
                             break;
