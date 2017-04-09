@@ -13,6 +13,9 @@ import java.security.PublicKey;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static leilao.InitSystem.procesosInteresados;
+import static leilao.InitSystem.processList;
+import static leilao.InitSystem.produtosLancados;
 
 
 /**
@@ -20,7 +23,7 @@ import java.util.logging.Logger;
  * @author Jessica
  */
 public class UniCastServer extends Thread {
-
+    static boolean teste = false;
     DatagramSocket socket = null;
     MulticastSocket s = null;
     InetAddress group = null;
@@ -41,7 +44,7 @@ public class UniCastServer extends Thread {
         // ********************************************
         // Creates the UDP Socket in the port of the process.
         try {
-            socket = new DatagramSocket(process.getPort());
+        socket = new DatagramSocket(Integer.parseInt(process.getPort()));
         } catch (IOException ex) {
             System.out.println("Creation of socket: " + ex);
         }
@@ -58,22 +61,25 @@ public class UniCastServer extends Thread {
     }
 
     @Override
-    public void run() {
+     public void run() {
+         
         byte[] buffer;
-        char type; // type of message
+//        char type; // type of message
         DatagramPacket messageIn;
         ByteArrayInputStream bis;
         ObjectInputStream ois;
 
         while (true) {
+           
             try {
-                int pid;
-                int port;
-                PublicKey chavePublica;
+                String pid;
+                String port;
+                char type;
+                PublicKey pubKey;
                 String nomeProduto;
-                int     idProduto;
+                String idProduto;
                 String descProduto;
-                int     precoProduto;
+                String precoProduto;
 
                 // ********************************************
                 // Receiving an UDP message
@@ -84,7 +90,8 @@ public class UniCastServer extends Thread {
 
                 bis = new ByteArrayInputStream(buffer);
                 ois = new ObjectInputStream(bis);
-                type = ois.readChar();
+                type= ois.readChar();
+//                InitSystem.setTipo(ois.readChar()); 
 
                 switch (type) {
                     // ********************************************
@@ -94,19 +101,15 @@ public class UniCastServer extends Thread {
 
                     case ('N'):
                         // *********************************************
-                        // Unpacking rest of the message
-                        
-                        pid = ois.readInt();
-                        port = ois.readInt();
-                        chavePublica = (PublicKey) ois.readObject();
-                        nomeProduto = ois.readUTF();
-                        System.out.println("Nome produto: " + nomeProduto);
-                         idProduto = ois.readInt();
-                          System.out.println("oi ");
-                        System.out.println("IDprod: " + idProduto);
-                         descProduto = ois.readUTF();
-                         precoProduto = ois.readInt();
-                    
+                        // Descompactando messagem
+                            pid = ois.readUTF();
+                            port = ois.readUTF();
+                            PublicKey chavePublica = (PublicKey) ois.readObject();
+                            nomeProduto = ois.readUTF();
+                            idProduto = ois.readUTF();
+                            descProduto = ois.readUTF();
+                            precoProduto = ois.readUTF();
+          
                         // *********************************************
                         // Creating new process and add in the list of process
                         Process novoProcesso = new Process(pid, port, chavePublica, nomeProduto, idProduto, descProduto, precoProduto);
@@ -125,8 +128,110 @@ public class UniCastServer extends Thread {
                         break;
 
                     case ('B'):
+                        //desenpacota mesn
+                        pid = ois.readUTF();
+                        port = ois.readUTF();
+                        String lance = ois.readUTF();
+                        idProduto = ois.readUTF();
+                   
+                        System.out.println("");    
+                        System.out.print("[UNICAST - RECEIVE]");
+                        System.out.println("Requisicao de lance de processo: " + pid);
+                        
+                       //alguem ja deu um lance nesse produto
+                       boolean jaLancado = true;
+                       if(!produtosLancados.isEmpty()){
+                            produtosLancados.add(idProduto);
+                            jaLancado = false;
+                       }else{
+                            for(String c:  InitSystem.produtosLancados){
+                                 if (c.equals(idProduto)) {
+                                      jaLancado = true;
+                                        break;
+                                 }
+                             }
+                       }
+                        long start = System.currentTimeMillis();
+//                        long finish = System.currentTimeMillis();
+//                        long total = finish - start;
+                       //Set novo preco do ultimo lance
+                        for(Process p: processList){
+                            if (p.getId().equals(pid)) {
+                                p.setPrecoProduto(lance);
+                                 break;
+                            }
+                        }
+                        //setar controlador de lances
+                        Controle caux = null;
+                        for(Controle c:  procesosInteresados){
+                            if (c.getProdutoId().equals(idProduto)) {
+                                   c.setLancadorId(pid);
+                                   break;
+                            }
+                        }
+                              
+                        if(jaLancado){
+                            Cronometro cro = new Cronometro(socket,port,pid,idProduto);
+                            cro.start();
+                           
+//                            Temporizador temporizador = new Temporizador(pid,idProduto);
+//                            temporizador.start();
+                            System.out.println("Leilao Inicializado produtoID:"+idProduto);
+                        }
+                        
                          break;
+                       
+                       
+                            
                 }
+                 System.out.println("kkk");
+                
+                
+                
+                if(teste){
+                    System.out.println("sucesso!");
+                    teste = false;
+                }
+                 if(InitSystem.lance){
+                    System.out.println("sucesso lance!");
+                    InitSystem.lance = false;
+                }
+//               switch (InitSystem.getTipo()) {
+//                    // ********************************************
+//                    // Tipos supported:
+//                    // F --> Finaliza compra no leilo enviando msg para vencedor
+//                    // B --> Buying request
+//                   
+//                   case ('F'):
+//                        //Finaliza Leira tempo estorado
+//                        System.out.println("saii");
+//                           
+//                       for(Controle c:  procesosInteresados){
+//                            if (c.isTempoFinalizado()) {
+//                                 System.out.println("Compra Finalizada!!");
+//                                 break;
+//                            }
+//                        }
+//                          
+//                           
+////                        ByteArrayOutputStream bos1 = new ByteArrayOutputStream(10);
+////                        ObjectOutputStream oos1 = new ObjectOutputStream(bos1);
+////                        oos1.writeUTF(pid);
+////                        oos1.writeUTF(myport);
+////                        oos1.writeUTF(nomeProduto);
+////                        oos1.flush();
+////
+////                        
+////                       byte[] output = bos1.toByteArray();
+////                       DatagramPacket messageOut1 = new DatagramPacket(output, output.length, InetAddress.getLocalHost(), Integer.parseInt(hostport));
+////                       System.out.println("");    
+////                       System.out.print("[UNICAST - SEND]");
+////                       System.out.print(" Voce venceu o Leilao " + pid);
+////                       System.out.print(" Proudut0  " + nomeProduto);
+////
+////                       socket.send(messageOut1);
+//                        
+//                }
             } catch (IOException ex) {
                 System.out.println("Unicast Exception");
             } catch (ClassNotFoundException ex) {
@@ -134,4 +239,17 @@ public class UniCastServer extends Thread {
             }
         }
     }
+
+    public static boolean isTeste() {
+        return teste;
+    }
+
+    public static void setTeste(boolean teste) {
+        UniCastServer.teste = teste;
+    }
+
+    
+     
+     
+     
 }
