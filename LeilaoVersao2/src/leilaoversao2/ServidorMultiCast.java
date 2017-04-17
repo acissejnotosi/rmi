@@ -137,9 +137,9 @@ public class ServidorMultiCast extends Thread {
                             oos.writeUTF(process.getId());
                             oos.writeUTF(process.getPort());
                             oos.writeObject(process.getChavePublica());
-                            oos.writeObject(produtos);
-//                            oos.writeInt(tmp.length);
-//                            oos.write(tmp);
+                            oos.writeObject(process.getListaProduto());
+                            oos.writeObject(process.getListaProdutosLeiloando());
+
                             oos.flush();
 
                             byte[] output = bos.toByteArray();

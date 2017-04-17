@@ -104,25 +104,23 @@ public class ServidorUniCast extends Thread {
                         pid = ois.readUTF();
                         port = ois.readUTF();
                         PublicKey chavePublica = (PublicKey) ois.readObject();
-                        System.out.println("Chegou1!");
+
                         List<Produto> listaProduto = (ArrayList<Produto>) ois.readObject();
-                        System.out.println("Chegou2!");
-                        System.out.println("Chegou2!");
+
                         List<Produto> listaProdutosleiloando = (List<Produto>) ois.readObject();
-                        //List<Produto> listaProdutosleiloando = new ArrayList<Produto>();
-                        System.out.println("Chegou3!");
+
                         // *********************************************
                         // Criando um novo processo
                         Processo novoProcesso = new Processo(pid, port, chavePublica, listaProduto, listaProdutosleiloando);
                         LeilaoVersao2.processList.add(novoProcesso);
 
-                        System.out.println("Chegou!");
+  
 
                         // *********************************************
                         // Adicionando aminha Lista de Produtos produto recebido
                         adicionaListaDeProdutos(process.getId(), listaProduto);
 
-                        System.out.println("Passu!");
+  
 
                         // *********************************************
                         // Gerando Hash Map Encripta
