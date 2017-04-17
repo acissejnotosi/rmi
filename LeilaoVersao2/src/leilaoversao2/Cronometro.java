@@ -19,13 +19,14 @@ import java.net.SocketException;
 import java.security.PublicKey;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static leilaoversao2.LeilaoVersao2.listaProdutos;
+
 import static leilaoversao2.LeilaoVersao2.procesosInteresados;
 import static leilaoversao2.LeilaoVersao2.processList;
 
-
 /**
- * Classe utilzada para gerenciar o leilão e determinar quando este irá finalizar.
+ * Classe utilzada para gerenciar o leilão e determinar quando este irá
+ * finalizar.
+ *
  * @author allan
  */
 public class Cronometro extends Thread {
@@ -33,19 +34,20 @@ public class Cronometro extends Thread {
     DatagramSocket socket = null;
 //    Process processo = null;
     String idProduto;
-    String leiloeroId = null;
-    MulticastSocket s= null;
-    String ProcessoVencedorId =null;
-    String ProcessoVencedorPort =null;
+    String leiloeroId = null;           //id processo
+    MulticastSocket s = null;
+    String ProcessoVencedorId = null;
+    String ProcessoVencedorPort = null;
     int MULT_PORT = 0;
-   
-   InetAddress group = null;
+
+    InetAddress group = null;
+
     Cronometro(DatagramSocket socket, String idProduto, String leiloeroId, MulticastSocket s, InetAddress group, int MULT_PORT) {
         this.socket = socket;
         this.idProduto = idProduto;
         this.leiloeroId = leiloeroId;
-        this.s=s;
-        this.group= group;
+        this.s = s;
+        this.group = group;
         this.MULT_PORT = MULT_PORT;
     }
 
@@ -66,34 +68,37 @@ public class Cronometro extends Thread {
             }
 //              Procurando produtos
             Produto product = null;
-            for (Produto pro : listaProdutos) {
-                if (pro.getId().equals(idProduto)) {
-                    product = pro;
-                    break;
+            for (Processo p : processList) {
+                if (p.getId().equals(leiloeroId)) {
+                    for (Produto pro : p.getListaProduto()) {
+                        if (pro.getId().equals(idProduto)) {
+                            product = pro;
+                            break;
+                        }
+
+                    }
                 }
-
             }
-
             System.out.println("Tempo de leilao Finalizado!");
             for (Controle c : procesosInteresados) {
                 if (c.getProdutoId().equals(idProduto)) {
                     for (Processo p : processList) {
                         if (p.getId().equals(c.getUltimo())) {
                             ProcessoVencedorId = c.getUltimo();
-                            ProcessoVencedorPort =p.getPort();
+                            ProcessoVencedorPort = p.getPort();
                             break;
                         }
                     }
                 }
             }
-             // *********************************************
+            // *********************************************
             // 
             ByteArrayOutputStream bos1 = new ByteArrayOutputStream(10);
             ObjectOutputStream oos1 = new ObjectOutputStream(bos1);
             oos1.writeChar('F');
             System.out.println(ProcessoVencedorId);
             System.out.println(ProcessoVencedorPort);
-            
+
             oos1.writeUTF(leiloeroId);
             oos1.writeUTF(ProcessoVencedorId);
             oos1.writeUTF(ProcessoVencedorPort);
@@ -114,7 +119,7 @@ public class Cronometro extends Thread {
             System.out.print("[MULTICAST - enviando]");
             System.out.print("Atualiza valores de produto");
 
-             // *********************************************
+            // *********************************************
             // Empacotando mensagem
             ByteArrayOutputStream bos = new ByteArrayOutputStream(10);
             ObjectOutputStream oos = new ObjectOutputStream(bos);

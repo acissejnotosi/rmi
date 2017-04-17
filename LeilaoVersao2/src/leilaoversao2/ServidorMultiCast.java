@@ -24,13 +24,13 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static leilaoversao2.LeilaoVersao2.listaProdutos;
+
 import static leilaoversao2.LeilaoVersao2.procesosInteresados;
 import static leilaoversao2.LeilaoVersao2.processList;
 
-
 /**
  * Classe utilizada para o recebimento das mensagens em Multicast
+ *
  * @author a1562711
  */
 public class ServidorMultiCast extends Thread {
@@ -46,6 +46,7 @@ public class ServidorMultiCast extends Thread {
 
     /**
      * construtor do servidor multicast
+     *
      * @param process
      * @param ipMulticast
      * @param portMulticast
@@ -71,7 +72,7 @@ public class ServidorMultiCast extends Thread {
     public void run() {
 
         byte[] buffer;
-        char type; 
+        char type;
         DatagramPacket messageIn;
         byte[] msg;
         ByteArrayInputStream bis;
@@ -94,43 +95,42 @@ public class ServidorMultiCast extends Thread {
                     case 'N':
                         String pid = ois.readUTF();
 
-                       
                         if (pid.equals(process.getId())) {
                             break;
                         } else {
-                           
+
                             // *********************************************
                             // Desempacotando o resto da mensagem
-                            
                             String port = ois.readUTF();
                             PublicKey chavePublica = (PublicKey) ois.readObject();
                             List<Produto> listaProduto = (ArrayList<Produto>) ois.readObject();
-                           
+
                             List<Produto> listaProdutosleiloando = (ArrayList<Produto>) ois.readObject();
+
+                            //   List<Produto> listaProdutosleiloando = new ArrayList<Produto>();
                             // *********************************************
                             // Adicionado lista de Produtos a minha lista de Produtos local
-                             adicionaListaDeProdutos(pid,listaProduto);
-                      
+                            adicionaListaDeProdutos(pid, listaProduto);
 
                             // *********************************************
                             // Criando um novo processo e adicionando na lista de processos
                             Processo novoProcesso = new Processo(pid, port, chavePublica, listaProduto, listaProdutosleiloando);
-                           processList.add(novoProcesso);
+                            processList.add(novoProcesso);
                             List<Produto> produtos = retornaListadeProdutosdeProcesso(process.getId());
                             // *********************************************
                             // Enviando para o novo processo essas informações
                             // Packing the message.
-                            
+
                             // *********************************************
-                           // Gerando Hash Map Encripta
-                           // Packing the message.
-                           Autenticacao auto = new Autenticacao();
-                           auto.setPublic_chave(chavePublica);
-                           gera_chave = new Chaves();
+                            // Gerando Hash Map Encripta
+                            // Packing the message.
+                            Autenticacao auto = new Autenticacao();
+                            auto.setPublic_chave(chavePublica);
+                            gera_chave = new Chaves();
 //                           byte [] tmp = gera_chave.criptografa(pid,myChavePrivada);
 //                           auto.setCriptografado(tmp);
 //                           assinatura.put(pid, auto);
-                            
+
                             ByteArrayOutputStream bos = new ByteArrayOutputStream(10);
                             ObjectOutputStream oos = new ObjectOutputStream(bos);
                             oos.writeChar('N');
@@ -168,13 +168,13 @@ public class ServidorMultiCast extends Thread {
                                 System.out.println(", Preço Produto " + p.getName() + ": " + p.getPrecoInicial());
                             }
                             socket.send(messageOut);
-                           
+
                             break;
                         }
 
                     case 'A':
                         // *********************************************
-                  
+
                         String id = ois.readUTF();
                         if (!process.getId().equals(id)) {
                             // Debug recebi  atualizaço de prooduto
@@ -184,23 +184,51 @@ public class ServidorMultiCast extends Thread {
                         }
                         String idProduto = ois.readUTF();
                         String novoValor = ois.readUTF();
-                        atualizaValorProduto(idProduto, novoValor);
+                        atualizaValorProduto(id, idProduto, novoValor);
                         break;
-                        
-                        
-                      case 'R':
+
+                    case 'R':
                         // *********************************************
                         // Recebe o ID do processo vencedor e do produto leiloado
-                        String vencedorID= ois.readUTF();
-                        String produtoID =  ois.readUTF();
+                        String vencedorID = ois.readUTF();
+                        String produtoID = ois.readUTF();
 
                         // *********************************************
                         // Atualizando Novo Proprietario                        
                         System.out.print("[MULTICAST - Envia]");
                         System.out.print(" ID do participante: " + vencedorID);
-                        atualizaProprientario(vencedorID,produtoID);
-                   
-                        
+                        atualizaProprientario(process.getId(), vencedorID, produtoID);
+
+                        break;
+
+                    case 'S':
+                        String p = ois.readUTF();
+                        String port = ois.readUTF();
+                        List<Produto> novaListaProduto = (ArrayList<Produto>) ois.readObject();
+                        List<Produto> novaListaProdutoLeiloando = (ArrayList<Produto>) ois.readObject();
+                        List<Processo> novaListaProcessosLeiloeiros = (ArrayList<Processo>) ois.readObject();
+                        //**************************************************
+                        //Atualiza lista de produto e produto leiloando desse processo
+                        //Além disso atualiza a lista de processos leiloeiros para
+                        //o processo corrente
+                        for (Processo pro : processList) {
+                            if (pro.getId().equals(p)) {
+                                pro.setListaProduto(novaListaProduto);
+                                pro.setListaProdutosLeiloando(novaListaProdutoLeiloando);
+                                LeilaoVersao2.listaProcessosLeiloeros.add(pro);
+                            }
+
+                        }
+
+                        break;
+
+                    case 'E':
+                        String idProSaindo = ois.readUTF();
+                        String portProSaindo = ois.readUTF();
+
+                        LeilaoVersao2.processList.remove(idProSaindo);
+                        LeilaoVersao2.listaProcessosLeiloeros.remove(idProSaindo);
+
                         break;
 
                 }
@@ -217,6 +245,7 @@ public class ServidorMultiCast extends Thread {
 
     /**
      * Método que retorna um processo a partir do seu ID
+     *
      * @param id
      * @return
      */
@@ -234,80 +263,94 @@ public class ServidorMultiCast extends Thread {
 
     /**
      * Método que atualiza o valor do produto
+     *
      * @param idProduto
      * @param novoValor
      */
-    public void atualizaValorProduto(String idProduto, String novoValor) {
-        for (Produto p : listaProdutos) {
-            if (p.getId().equals(idProduto)) {
-                p.setPrecoInicial(novoValor);
+    public void atualizaValorProduto(String idProcesso, String idProduto, String novoValor) {
+
+        for (Processo proc : processList) {
+            if (proc.getId().equals(idProcesso)) {
+                for (Produto p : proc.getListaProduto()) {
+                    if (p.getId().equals(idProduto)) {
+                        p.setPrecoInicial(novoValor);
+                    }
+
+                }
             }
-
         }
-
     }
 
     /**
      * Método que atualiza o proprietário do produto
+     *
      * @param idProcesso
      * @param idProduto
      */
-    public static void atualizaProprientario(String idProcesso, String idProduto ) {
+    public static void atualizaProprientario(String leiloeiroID, String vencedorID, String idProduto) {
 
-        for (Produto p : listaProdutos) {
-            if (p.getId().equals(idProduto)) {
-       
-                    p.setIdProcesso(idProcesso);
-     
+        Produto product = null;
+
+        for (Processo pL : processList) {
+            if (pL.getId().equals(leiloeiroID)) {
+                for (Produto prodL : pL.getListaProdutosLeiloando()) {
+                    if (prodL.getId().equals(idProduto)) {
+                        product = prodL;
+                        pL.getListaProdutosLeiloando().remove(prodL);
+                        break;
+                    }
+                }
+
             }
         }
 
+        for (Processo pL : processList) {
+            if (pL.getId().equals(vencedorID)) {
+                pL.getListaProduto().add(product);
+                break;
+            }
+
+        }
     }
 
     /**
-     * Método que adiciona produtos a lista de produtos do processo
+     * Método que adiciona lista de produtos a lista de produtos do novo
+     * processo
+     *
      * @param id
      * @param listaProduto
      */
-    public void adicionaListaDeProdutos(String id , List<Produto> listaProduto) {
+    public void adicionaListaDeProdutos(String id, List<Produto> listaProduto) {
+        for (Processo proc : processList) {
+            if (proc.getId().equals(id)) {
 
-        for (Produto p : listaProduto) {
-                listaProdutos.add(p);
-                Controle controle = new Controle(p.getId(),p.getPrecoInicial());
-                procesosInteresados.add(controle);
+                proc.setListaProduto(listaProduto);
+                for (Produto prod : proc.getListaProduto()) {
+                    Controle controle = new Controle(prod.getId(), prod.getPrecoInicial());
+                    procesosInteresados.add(controle);
+                }
+
+            }
         }
-
     }
-     
+
     /**
      * Método ue retorna a lista de produtos do processo
+     *
      * @param idProcesso
      * @return produtos
      */
     public List<Produto> retornaListadeProdutosdeProcesso(String idProcesso) {
-         
-       List<Produto> produtos = new ArrayList<>();
-        for (Produto p : listaProdutos) {
-            if (p.getIdProcesso().equals(idProcesso)) {
-                produtos.add(p);
+
+        List<Produto> produtos = new ArrayList<>();
+
+        for (Processo proc : processList) {
+            if (proc.getId().equals(idProcesso)) {
+                return proc.getListaProduto();
             }
-
         }
-        return produtos;
+
+        return null;
     }
-
-    /**
-     * Método que retorna a lista de produtos do processo corrente
-     */
-    public static void retornaListadeProdutosdeProcesso() {
-         
-         
-        for (Produto p : listaProdutos) {
-              System.out.println("Processo"+p.getIdProcesso()+"produto"+p.getId());
-
-        }
-    }
-
-  
 
 }

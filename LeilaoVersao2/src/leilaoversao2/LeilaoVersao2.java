@@ -32,8 +32,7 @@ public class LeilaoVersao2 {
     static ArrayList<Processo> processList = new ArrayList<>();
     static List<Controle> procesosInteresados = new ArrayList<>();
     static List<String> produtosLancados = new ArrayList<>();
-    static List<Produto> listaProdutos = new ArrayList<>();
-    static List<Produto> listaProdutosLeiloando = new ArrayList<>();
+       
     static List<Processo> listaProcessosLeiloeros = new ArrayList<>();
     static Map<String, Autenticacao> assinatura = new HashMap<String, Autenticacao>();
     static PublicKey mychavePublica = null;
@@ -65,7 +64,9 @@ public class LeilaoVersao2 {
         String tempoLeilao = " ";
         Scanner in = new Scanner(System.in);
         gera_chave = new Chaves();
-
+        List<Produto> listaProdutos = new ArrayList<>();
+        List<Produto> listaProdutosLeiloando = new ArrayList<>();
+        
         //********************************************
         // Insere o processo no grupo Multicast
         InetAddress group = InetAddress.getByName(IP_MULTICAST);
@@ -99,7 +100,7 @@ public class LeilaoVersao2 {
 
         //  Controle controle = new Controle(idProduto, precoProduto);
         //procesosInteresados.add(controle);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream(10);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(40);
         ObjectOutputStream oos = new ObjectOutputStream(bos);
 
         //*********************************************
@@ -117,7 +118,7 @@ public class LeilaoVersao2 {
         ServidorMultiCast multCastComm = new ServidorMultiCast(process, IP_MULTICAST, PORT_MULTICAST);
         multCastComm.start();
 
-        System.out.println("Porta é: " + port);
+      
         //**********************************************
         //Inicialização da comunicação Unicast
         ServidorUniCast uniCastComm = new ServidorUniCast(process, IP_MULTICAST, PORT_MULTICAST);
@@ -134,7 +135,7 @@ public class LeilaoVersao2 {
         System.out.print("[MULTICAST enviando]");
         System.out.print(" ID do participante: " + nomeProcesso);
         System.out.print(", Porta: " + port);
-        System.out.print(", Chave publica: - ");
+        System.out.println(", Chave publica: - ");
         s.send(messageOut);
 
         // *********************************************
@@ -161,6 +162,9 @@ public class LeilaoVersao2 {
                     String nomeProRecebeLance;
                     String nomeProdRecebeLance;
                     String lance;
+                    Processo paux;                           //processo que estou dando lance
+                    Produto produtoaux;                     //produto que eu quero dar um lance
+                    byte[] encryptedText;
 
                     // *******************************************
                     //Verifica quantidade de processos ativos
@@ -169,6 +173,9 @@ public class LeilaoVersao2 {
                         break;
                     }
 
+                    if (listaProcessosLeiloeros.isEmpty()) {
+                        System.out.println("Não há leiloes disponíveis no momento!");
+                    }
                     System.out.println("NOME DOS PROCESSOS LEILOEIROS:");
                     nomeProcessosLeiloeiros();
 
@@ -177,16 +184,52 @@ public class LeilaoVersao2 {
 
                     if (verificaSeExisteProesso(nomeProRecebeLance)) {
                         System.out.println("Processo para dar lance selecionado com sucesso!");
+                        paux = verificaProcessoNaLista(nomeProRecebeLance);
                         System.out.println("Agora selecione o PRODUTO desejado:");
                         mostraProdutosLeiloandoDesseProcesso(nomeProRecebeLance);
                         nomeProdRecebeLance = in.nextLine();
                         if (verificaProdutoListaLeiloando(nomeProRecebeLance, nomeProdRecebeLance)) {
+
+                            produtoaux = verificaoProdutoNaLista(nomeProdRecebeLance, paux);
+
+                            System.out.println("O valor atual do produto é:" + produtoaux.getPrecoInicial());
+                            System.out.println("Seu lance precisa ser maior que o valor atual do produto!");
                             System.out.println("Digite o valor de lance desejado:");
                             lance = in.nextLine();
+                            while (Integer.parseInt(lance) < Integer.parseInt(produtoaux.getPrecoInicial())) {
+                                System.out.println("Seu lance é inferior ao valor atual do produto!Tente Novamente.");
+                            }
 
-                            System.out.println("Seu lance foi registrado");
+                            System.out.println("Seu lance foi registrado!");
 
-                            //Autenticação unicast processo leiloador
+                            // *********************************************
+                            // encriptografando meu nome com minha privda
+                            encryptedText = gera_chave.criptografa("kkkk", myChavePrivada);
+
+                            // *********************************************
+                            //empacotando mensagem apra mandar em unicast
+                            ByteArrayOutputStream bos1 = new ByteArrayOutputStream(10);
+                            ObjectOutputStream oos1 = new ObjectOutputStream(bos1);
+                            oos1.writeChar('B');
+                            oos1.writeUTF(process.getId());
+                            oos1.writeUTF(process.getPort());
+                            oos1.writeUTF(lance);
+                            oos1.writeUTF(produtoaux.getName());
+                            oos1.write(encryptedText.length);
+                            oos1.write(encryptedText);
+                            oos1.flush();
+
+                            //*****************************************************
+                            // Enviando a mensagem Unicast para o vendedor
+                            byte[] output = bos1.toByteArray();
+                            DatagramPacket messageOut1 = new DatagramPacket(output, output.length, InetAddress.getLocalHost(), Integer.parseInt(paux.getPort()));
+                            System.out.println("");
+                            System.out.println("[UNICAST - Envia]");
+                            System.out.print(" Enviando Lance " + paux.getId());
+                            System.out.print(" para o comprador  " + process.getId());
+
+                            socket.send(messageOut1);
+
                         } else {
                             System.out.println("Esse produto não está em leilão!");
                             break;
@@ -273,6 +316,8 @@ public class LeilaoVersao2 {
                         //*********************************************
                         //Adiciona o produto a lista de produtos.
                         process.getListaProduto().add(product);
+
+                        System.out.println("Selecione 4 novamente caso queria leiloar o produto que acabou de cadastrar!");
                     } else {
                         String produtoDesejado;
 
@@ -283,11 +328,10 @@ public class LeilaoVersao2 {
 
                         if (verificaSeoProdutoExisteNaLista(produtoDesejado, process)) {
                             System.out.println("Produto" + produtoDesejado + "selecionado com sucesso!");
-
-                            // process
-                            // caracteristícas
-                            //listaprodutosleiloando         
-                            //Envio dados para multicast 
+                            //*******************************************************
+                            //Envia dados do processo e do produto que deseja leiloar
+                            //Realiza uma transmissão multicast para todos os processos
+                            //Atualizarem suas listas de produtos e processos leiloeiros
                         } else {
                             System.out.println("Esse produto não existe na lista, para cadastrá-lo utilize a opção 3 do menu.");
                             break;
@@ -295,10 +339,27 @@ public class LeilaoVersao2 {
 
                         for (Produto p : process.getListaProduto()) {
                             if (p.getName().equals(produtoDesejado)) {
-                                process.getListaProdutosLeiloando().add(p);
-                                listaProcessosLeiloeros.add(process);
+                                process.getListaProdutosLeiloando().add(p);                 //adiciona o produto na lista de produtos
+                                //leiloando.
+                                process.getListaProduto().remove(p);                        //remove o produto da lista de produtos.
+                                
                             }
                         }
+
+                        ByteArrayOutputStream bos1 = new ByteArrayOutputStream(10);
+                        ObjectOutputStream oos1 = new ObjectOutputStream(bos1);
+                        oos1.writeChar('S');
+                        oos1.writeUTF(process.getId());
+                        oos1.writeUTF(process.getPort());
+                        oos1.writeObject(process.getListaProdutosLeiloando());
+                        oos1.writeObject(process.getListaProduto());
+                        oos1.writeObject(listaProcessosLeiloeros);
+                        oos1.flush();
+
+                        //*****************************************************
+                        //Envia a mensagem para todos os processos
+                        byte[] m1 = bos.toByteArray();
+                        DatagramPacket messageOut2 = new DatagramPacket(m1, m1.length, group, PORT_MULTICAST);
                     }
                     break;
                 case "5":
@@ -322,7 +383,19 @@ public class LeilaoVersao2 {
                 case "7":
                     //**********************************************
                     //Sai do programa
+
                     System.out.println("Estou saindo!");
+                    ByteArrayOutputStream bos1 = new ByteArrayOutputStream(10);
+                    ObjectOutputStream oos1 = new ObjectOutputStream(bos1);
+                    oos1.writeChar('E');
+                    oos1.writeUTF(process.getId());
+                    oos1.writeUTF(process.getPort());
+                    oos1.flush();
+                    //*****************************************************
+                    //Envia a mensagem para todos os processos
+                    byte[] m2 = bos.toByteArray();
+                    DatagramPacket messageOut3 = new DatagramPacket(m2, m2.length, group, PORT_MULTICAST);
+
                     s.leaveGroup(group);
                     s.close();
                     System.exit(0);
@@ -338,6 +411,18 @@ public class LeilaoVersao2 {
         for (Processo p : processList) {
             System.out.println(" - processo: " + p.getId());
         }
+    }
+
+    public static Processo verificaProcessoNaLista(String processo) {
+
+        for (Processo p : processList) {
+            if (p.getId().equals(processo)) {
+                return p;
+            }
+
+        }
+
+        return null;
     }
 
     public static void iterarSobreListaProdutos(Processo process) {
@@ -359,6 +444,17 @@ public class LeilaoVersao2 {
             }
         }
         return false;
+    }
+
+    public static Produto verificaoProdutoNaLista(String produtoDesejado, Processo process) {
+
+        Produto prod;
+        for (Produto p : process.getListaProduto()) {
+            if (produtoDesejado.equals(p.getName())) {
+                return prod = p;
+            }
+        }
+        return null;
     }
 
     public final static void clearConsole() {

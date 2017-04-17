@@ -15,7 +15,7 @@ class Processo implements Serializable {
     private String id;
     private String port;
     private List<Produto> listaProduto;
-    static List<Produto> listaProdutosLeiloando;
+    private List<Produto> listaProdutosLeiloando;
     private PublicKey chavePublica;
     private PrivateKey chavePrivada;
 
@@ -115,7 +115,7 @@ class Processo implements Serializable {
         this.listaProduto = listaProduto;
     }
 
-    public static void setListaProdutosLeiloando(List<Produto> listaProdutosLeiloando) {
+    public void setListaProdutosLeiloando(List<Produto> listaProdutosLeiloando) {
         listaProdutosLeiloando = listaProdutosLeiloando;
     }
 
@@ -127,7 +127,7 @@ class Processo implements Serializable {
         return listaProduto;
     }
 
-    public static  List<Produto> getListaProdutosLeiloando() {
+    public   List<Produto> getListaProdutosLeiloando() {
         return listaProdutosLeiloando;
     }
 

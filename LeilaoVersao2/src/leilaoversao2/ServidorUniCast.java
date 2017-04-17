@@ -16,12 +16,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static leilaoversao2.LeilaoVersao2.listaProdutos;
-import static leilaoversao2.LeilaoVersao2.procesosInteresados;
+import static leilaoversao2.LeilaoVersao2.assinatura;
+import static leilaoversao2.LeilaoVersao2.listaProcessosLeiloeros;
 
+import static leilaoversao2.LeilaoVersao2.procesosInteresados;
+import static leilaoversao2.LeilaoVersao2.processList;
+import static leilaoversao2.LeilaoVersao2.produtosLancados;
 
 /**
- *Classe para o recebimento das mensagens Unicast.
+ * Classe para o recebimento das mensagens Unicast.
+ *
  * @author Jessica
  */
 public class ServidorUniCast extends Thread {
@@ -35,7 +39,8 @@ public class ServidorUniCast extends Thread {
     int MULT_PORT = 0;
 
     /**
-     *Contrutor da Classe ServidorUnicast
+     * Contrutor da Classe ServidorUnicast
+     *
      * @param p Processo
      * @param MULT_IP IP para o Multicast
      * @param MULT_PORT Port para o Multicast
@@ -45,13 +50,11 @@ public class ServidorUniCast extends Thread {
         this.MULT_IP = MULT_IP;
         this.MULT_PORT = MULT_PORT;
 
-
         try {
             socket = new DatagramSocket(Integer.parseInt(process.getPort()));
         } catch (IOException ex) {
             System.out.println("Creation of socket: " + ex);
         }
-
 
         try {
             group = InetAddress.getByName(MULT_IP);
@@ -82,7 +85,7 @@ public class ServidorUniCast extends Thread {
                 String idProduto;
                 String descProduto;
                 String precoProduto;
-                  
+
                 // ********************************************
                 // Recebendo mensagem UDP
                 buffer = new byte[1024];
@@ -94,7 +97,6 @@ public class ServidorUniCast extends Thread {
 
                 System.out.println();
                 switch (type) {
-                   
 
                     case ('N'):
                         // *********************************************
@@ -102,39 +104,41 @@ public class ServidorUniCast extends Thread {
                         pid = ois.readUTF();
                         port = ois.readUTF();
                         PublicKey chavePublica = (PublicKey) ois.readObject();
+                        System.out.println("Chegou1!");
                         List<Produto> listaProduto = (ArrayList<Produto>) ois.readObject();
-                        List<Produto> listaProdutosleiloando = (ArrayList<Produto>) ois.readObject();
-
+                        System.out.println("Chegou2!");
+                        System.out.println("Chegou2!");
+                        List<Produto> listaProdutosleiloando = (List<Produto>) ois.readObject();
+                        //List<Produto> listaProdutosleiloando = new ArrayList<Produto>();
+                        System.out.println("Chegou3!");
                         // *********************************************
                         // Criando um novo processo
                         Processo novoProcesso = new Processo(pid, port, chavePublica, listaProduto, listaProdutosleiloando);
                         LeilaoVersao2.processList.add(novoProcesso);
+
+                        System.out.println("Chegou!");
+
                         // *********************************************
                         // Adicionando aminha Lista de Produtos produto recebido
                         adicionaListaDeProdutos(process.getId(), listaProduto);
+
+                        System.out.println("Passu!");
 
                         // *********************************************
                         // Gerando Hash Map Encripta
                         Autenticacao auto = new Autenticacao();
                         auto.setPublic_chave(chavePublica);
                         gera_chave = new Chaves();
-                      //  auto.setCriptografado(gera_chave.criptografa(pid,myChavePrivada));
-                    //    assinatura.put(pid, auto);
+                        //  auto.setCriptografado(gera_chave.criptografa(pid,myChavePrivada));
+                        //    assinatura.put(pid, auto);
 
-                       // System.out.println("Lista size novo unicas " + listaProdutos.size());
-                       // System.out.println("Lista size novo recebida " + listaProduto.size());
+                        // System.out.println("Lista size novo unicas " + listaProdutos.size());
+                        // System.out.println("Lista size novo recebida " + listaProduto.size());
                         System.out.println("");
                         System.out.println("[UNICAST - Recebe]");
                         System.out.println(" ID do participante: " + pid);
                         System.out.println(", Porta: " + port);
                         System.out.println(", Chave publica: - ");
-
-                        for (Produto p : listaProduto) {
-                            System.out.println("Informações sobre o " + p.getName() + " produto da lista do processo " + pid);
-                            System.out.println(", ID Produto " + p.getName() + ": " + p.getId());
-                            System.out.println(", Descrição Produto " + p.getName() + ": " + p.getDescricao());
-                            System.out.println(", Preço Produto " + p.getName() + ": " + p.getPrecoInicial());
-                        }
                         System.out.println("Lista size novo unicast " + listaProduto.size());
 
                         break;
@@ -145,36 +149,36 @@ public class ServidorUniCast extends Thread {
                         pid = ois.readUTF();
                         port = ois.readUTF();
                         String lance = ois.readUTF();
- 
                         idProduto = ois.readUTF(); //Id produto do processo atual(leiloero)
-//                        int tamanho = ois.readInt();//Id produto do processo atual(leiloero)
-//      
-//                        byte[] mensagemCripto = new byte[tamanho];
-//                        for (int i = 0; i < tamanho; i++) {
-//                            mensagemCripto[i] = ois.readByte();
-//                        }
-//                        gera_chave = new GeraChave();
-//                        
-//                        String mensagemDescripta = gera_chave.decriptografa(mensagemCripto,assinatura.get(pid).getPublic_chave());
-//                        
-//                        //Compara mensagem  
-//                        if(mensagemDescripta.equals(pid)){
-//                            System.out.println("-----Autentica-------------");
-//                        }
-                        
-                        
-                        
+                        Integer tamanho = ois.read();//Id produto do processo atual(leiloero)
+                        // *********************************************
+                        // Lendo byte array
+                        byte[] mensagemCripto = new byte[tamanho];
+                        for (int i = 0; i < tamanho; i++) {
+                            mensagemCripto[i] = ois.readByte();
+                        }
 
+                        PublicKey chavePublica1 = assinatura.get(pid).getPublic_chave();
+
+                        // *********************************************
+                        // Descriptografando mensagem recebido com chaave Publicado do Processo que enviou requisiço
+                        String decrypedText = gera_chave.decriptografa(mensagemCripto, chavePublica1);
+
+                        // *********************************************
+                        // Comparamdo atuendicidade da mensagem de assinatura
+                        if (!decrypedText.equals("kkkk")) {
+                            ClienteNaoAutenticado(pid, port);
+                            break;
+                        }
                         System.out.println("");
                         System.out.print("[UNICAST - Recebe]");
                         System.out.println("Requisicao de lance do processo: " + pid);
                         System.out.print(", valor do lance: " + lance);
 
                         // verifica valor do lance maior de que valor do produto
-                        Produto produto = buscaUmProdutoPorId(idProduto);
+                        Produto produto = buscaUmProdutoPorId(process.getId(), idProduto);
                         int to = Integer.parseInt(produto.getPrecoInicial());
-                        System.out.println(to);
-                        System.out.println(lance);
+
                         if (to > Integer.parseInt(lance)) {
                             System.out.println("Valor do Lance não é suficiente!");
                             break;
@@ -182,8 +186,8 @@ public class ServidorUniCast extends Thread {
 
                         //alguem ja deu um lance nesse produto
                         boolean lancar = true;
-                        if (LeilaoVersao2.produtosLancados.isEmpty()) {
-                            LeilaoVersao2.produtosLancados.add(idProduto);
+                        if (produtosLancados.isEmpty()) {
+                            produtosLancados.add(idProduto);
                             lancar = true;
                         } else {
                             for (String c : LeilaoVersao2.produtosLancados) {
@@ -194,13 +198,16 @@ public class ServidorUniCast extends Thread {
                             }
                         }
                         //atualiza valor do proiduto local
-                        for (Produto p : process.getListaProduto()) {
-                            if (p.getId().equals(pid)) {
-                                p.setPrecoInicial(lance);
-                                break;
+                        for (Processo proc : listaProcessosLeiloeros) {
+                            if (proc.getId().equals(pid)) {
+                                for (Produto p : proc.getListaProduto()) {
+                                    if (p.getId().equals(idProduto)) {
+                                        p.setPrecoInicial(lance);
+                                        break;
+                                    }
+                                }
                             }
                         }
-
                         // Enviar multcast atualizando valor do produto 
                         if (lancar) {
                             //setar controlador de lances
@@ -214,7 +221,7 @@ public class ServidorUniCast extends Thread {
                             /// Enviando atualizacao de preco para todo multicast 
                             System.out.println("Lancar Notificaçao para outro interesado");
 //                            notificacaParaCliente(pid,port,idProduto,lance);
-                            for (Controle c : LeilaoVersao2.procesosInteresados) {
+                            for (Controle c : procesosInteresados) {
                                 if (c.getProdutoId().equals(idProduto)) {
                                     for (String ids : c.getLancadorId()) {
                                         if (!ids.equals(pid)) {
@@ -270,15 +277,33 @@ public class ServidorUniCast extends Thread {
         }
     }
 
-  
+    public static boolean isTeste() {
+        return teste;
+    }
 
-    /**
-     * Método que atualiza os valores do produto de um processo e envia uma mensagem Multicast
-     * @param id
-     * @param idProduto
-     * @param novoValor
-     * @throws IOException
-     */
+    public static void setTeste(boolean teste) {
+        ServidorUniCast.teste = teste;
+    }
+
+    public void repostaWatch(String id, String port) throws IOException {
+
+        System.out.println("");
+        System.out.print("[UNIACAST - Enviando]");
+
+        // *********************************************
+        // Packing transaction validation.
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(10);
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeChar('U');
+        oos.writeUTF(id);
+        oos.flush();
+
+        byte[] output = bos.toByteArray();
+        DatagramPacket request = new DatagramPacket(output, output.length, InetAddress.getLocalHost(), Integer.parseInt(port));
+        socket.send(request);
+
+    }
+
     public void atualizaValorCliente(String id, String idProduto, String novoValor) throws IOException {
 
         System.out.println("");
@@ -302,14 +327,6 @@ public class ServidorUniCast extends Thread {
 
     }
 
-    /**
-     * Método que notifica o cliente que um novo lance foi realizado sobre o produto dele
-     * @param id
-     * @param port
-     * @param idProduto
-     * @param novoValor
-     * @throws IOException
-     */
     public void notificacaParaCliente(String id, String port, String idProduto, String novoValor) throws IOException {
 
         System.out.println("");
@@ -332,16 +349,29 @@ public class ServidorUniCast extends Thread {
 
     }
 
-    /**
-     * Método que procura um processo na lista de processos e retorna um processo.
-     * @param id
-     * @return process Processo
-     */
+    public void ClienteNaoAutenticado(String id, String port) throws IOException {
+
+        System.out.println("");
+        System.out.print("[UNIACAST - Enviando]");
+        System.out.print("Seu lance nao esta realizado, pois nao esta autenticado");
+        // *********************************************
+        // Packing transaction validation.
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(10);
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeChar('K');
+        oos.flush();
+
+        byte[] output = bos.toByteArray();
+        DatagramPacket request = new DatagramPacket(output, output.length, InetAddress.getLocalHost(), Integer.parseInt(port));
+        socket.send(request);
+
+    }
+
     public static Processo procuraUmprocesso(String id) {
 
         Processo process = null;
 
-        for (Processo p : LeilaoVersao2.processList) {
+        for (Processo p : processList) {
             if (p.getId().equals(id)) {
                 process = p;
             }
@@ -350,11 +380,6 @@ public class ServidorUniCast extends Thread {
 
     }
 
-    /**
-     * Método que adiciona um processo interessado no produto em leilão e adiciona na lista de processos lançados ou processos que realizaram um lançe naquele produto leiloado 
-     * @param idProcesso
-     * @param idProduto
-     */
     public static void adiconaProcessoInteresado(String idProcesso, String idProduto) {
 
         for (Controle c : procesosInteresados) {
@@ -375,32 +400,42 @@ public class ServidorUniCast extends Thread {
         }
     }
 
-    /**
-     * Método que busca um produto numa lista de produtos a partir do id do produto
-     * @param id
-     * @return
-     */
-    public static Produto buscaUmProdutoPorId(String id) {
-        for (Produto p : listaProdutos) {
-            if (p.getId().equals(id)) {
-                return p;
+    public static Produto buscaUmProdutoPorId(String process, String idProduto) {
+
+        for (Processo proc : processList) {
+            if (proc.getId().equals(process)) {
+                for (Produto p : proc.getListaProduto()) {
+                    if (p.getId().equals(idProduto)) {
+                        return p;
+
+                    }
+
+                }
             }
         }
+
         return null;
     }
 
     /**
-     * Método que adiciona um produto na lista de produtos
+     * Método que adiciona lista de produtos a lista de produtos do novo
+     * processo
+     *
      * @param id
      * @param listaProduto
      */
     public void adicionaListaDeProdutos(String id, List<Produto> listaProduto) {
+        for (Processo proc : processList) {
+            if (proc.getId().equals(id)) {
 
-        for (Produto p : listaProduto) {
-            listaProdutos.add(p);
-            Controle controle = new Controle(p.getId(), p.getPrecoInicial());
-            procesosInteresados.add(controle);
+                proc.setListaProduto(listaProduto);
+                for (Produto prod : proc.getListaProduto()) {
+                    Controle controle = new Controle(prod.getId(), prod.getPrecoInicial());
+                    procesosInteresados.add(controle);
+                }
+
+            }
         }
-
     }
+
 }
