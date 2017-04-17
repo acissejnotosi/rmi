@@ -127,8 +127,7 @@ public class ServidorUniCast extends Thread {
                         Autenticacao auto = new Autenticacao();
                         auto.setPublic_chave(chavePublica);
                         gera_chave = new Chaves();
-                        //  auto.setCriptografado(gera_chave.criptografa(pid,myChavePrivada));
-                        //    assinatura.put(pid, auto);
+                        assinatura.put(pid, auto);
 
                         // System.out.println("Lista size novo unicas " + listaProdutos.size());
                         // System.out.println("Lista size novo recebida " + listaProduto.size());

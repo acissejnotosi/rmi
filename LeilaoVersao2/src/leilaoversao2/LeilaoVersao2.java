@@ -342,24 +342,25 @@ public class LeilaoVersao2 {
                                 process.getListaProdutosLeiloando().add(p);                 //adiciona o produto na lista de produtos
                                 //leiloando.
                                 process.getListaProduto().remove(p);                        //remove o produto da lista de produtos.
-                                
+                                break;
                             }
                         }
 
-                        ByteArrayOutputStream bos1 = new ByteArrayOutputStream(10);
+                        ByteArrayOutputStream bos1 = new ByteArrayOutputStream(1024);
                         ObjectOutputStream oos1 = new ObjectOutputStream(bos1);
                         oos1.writeChar('S');
                         oos1.writeUTF(process.getId());
                         oos1.writeUTF(process.getPort());
                         oos1.writeObject(process.getListaProdutosLeiloando());
                         oos1.writeObject(process.getListaProduto());
-                        oos1.writeObject(listaProcessosLeiloeros);
                         oos1.flush();
-
+                        
                         //*****************************************************
                         //Envia a mensagem para todos os processos
-                        byte[] m1 = bos.toByteArray();
+                        byte[] m1 = bos1.toByteArray();
                         DatagramPacket messageOut2 = new DatagramPacket(m1, m1.length, group, PORT_MULTICAST);
+                        s.send(messageOut2);
+                        System.out.println("enviei");
                     }
                     break;
                 case "5":

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static leilaoversao2.LeilaoVersao2.assinatura;
 
 import static leilaoversao2.LeilaoVersao2.procesosInteresados;
 import static leilaoversao2.LeilaoVersao2.processList;
@@ -90,6 +91,8 @@ public class ServidorMultiCast extends Thread {
 
                 ois = new ObjectInputStream(bis);
                 type = ois.readChar();
+                System.out.println(type);
+                System.out.println("aqqui");
                 switch (type) {
 
                     case 'N':
@@ -127,9 +130,7 @@ public class ServidorMultiCast extends Thread {
                             Autenticacao auto = new Autenticacao();
                             auto.setPublic_chave(chavePublica);
                             gera_chave = new Chaves();
-//                           byte [] tmp = gera_chave.criptografa(pid,myChavePrivada);
-//                           auto.setCriptografado(tmp);
-//                           assinatura.put(pid, auto);
+                            assinatura.put(pid, auto);
 
                             ByteArrayOutputStream bos = new ByteArrayOutputStream(10);
                             ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -202,11 +203,13 @@ public class ServidorMultiCast extends Thread {
                         break;
 
                     case 'S':
+                        System.out.println("recebi");
                         String p = ois.readUTF();
                         String port = ois.readUTF();
                         List<Produto> novaListaProduto = (ArrayList<Produto>) ois.readObject();
                         List<Produto> novaListaProdutoLeiloando = (ArrayList<Produto>) ois.readObject();
-                        List<Processo> novaListaProcessosLeiloeiros = (ArrayList<Processo>) ois.readObject();
+                        System.out.println("novaListaProduto.size()"+novaListaProduto.size());
+                        System.out.println("novaListaProdutoLeiloando.size()"+novaListaProdutoLeiloando.size());
                         //**************************************************
                         //Atualiza lista de produto e produto leiloando desse processo
                         //Além disso atualiza a lista de processos leiloeiros para
