@@ -114,13 +114,9 @@ public class ServidorUniCast extends Thread {
                         Processo novoProcesso = new Processo(pid, port, chavePublica, listaProduto, listaProdutosleiloando);
                         LeilaoVersao2.processList.add(novoProcesso);
 
-  
-
                         // *********************************************
                         // Adicionando aminha Lista de Produtos produto recebido
                         adicionaListaDeProdutos(process.getId(), listaProduto);
-
-  
 
                         // *********************************************
                         // Gerando Hash Map Encripta
@@ -148,14 +144,14 @@ public class ServidorUniCast extends Thread {
                         String lance = ois.readUTF();
                         idProduto = ois.readUTF(); //Id produto do processo atual(leiloero)
                         Integer tamanho = ois.read();//Id produto do processo atual(leiloero)
-                        
+
                         // *********************************************
                         // Lendo byte array
                         byte[] mensagemCripto = new byte[tamanho];
                         for (int i = 0; i < tamanho; i++) {
                             mensagemCripto[i] = ois.readByte();
                         }
-                        
+
                         PublicKey chavePublica1 = assinatura.get(pid).getPublic_chave();
 
                         // *********************************************
@@ -176,7 +172,7 @@ public class ServidorUniCast extends Thread {
                         // verifica valor do lance maior de que valor do produto
                         Produto produto = buscaUmProdutoPorId(process.getId(), idProduto);
                         int to = Integer.parseInt(produto.getPrecoInicial());
-                        int teste =  Integer.parseInt(lance);
+                        int teste = Integer.parseInt(lance);
 
                         if (to > Integer.parseInt(lance)) {
                             System.out.println("Valor do Lance não é suficiente!");
@@ -196,21 +192,22 @@ public class ServidorUniCast extends Thread {
                                 }
                             }
                         }
-                        //atualiza valor do proiduto local
-                        for (Processo proc : listaProcessosLeiloeros) {
-                            if (proc.getId().equals(pid)) {
-                                for (Produto p : proc.getListaProduto()) {
-                                    if (p.getId().equals(idProduto)) {
-                                        p.setPrecoInicial(lance);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
+
                         // Enviar multcast atualizando valor do produto 
                         if (lancar) {
                             //setar controlador de lances
                             adiconaProcessoInteresado(pid, idProduto);
+                            if(procesosInteresados.size()==0){
+                                Controle cont = new Controle(idProduto,pid);
+                                cont.setLancadorId(new ArrayList<>());
+                                cont.getLancadorId().add(pid);
+                                cont.setUltimo(pid);
+                                procesosInteresados.add(cont);
+                            }
+                                
+                            //atualiza valores de preco local
+                            atualizaPrecoProdutoLocal(idProduto, lance);
+
                             Cronometro cro = new Cronometro(socket, idProduto, process.getId(), s, group, MULT_PORT);
                             cro.start();
                             System.out.println("Leilao Inicializado produtoID:" + idProduto);
@@ -397,6 +394,7 @@ public class ServidorUniCast extends Thread {
                 c.getLancadorId().add(idProcesso);
             }
         }
+       
     }
 
     public static Produto buscaUmProdutoPorId(String process, String idProduto) {
@@ -434,6 +432,22 @@ public class ServidorUniCast extends Thread {
 
             }
         }
+    }
+
+    public void atualizaPrecoProdutoLocal(String idProduto, String lance) {
+
+        //atualiza valor do proiduto local
+        for (Processo proc : listaProcessosLeiloeros) {
+            if (proc.getId().equals(process.getId())) {
+                for (Produto p : proc.getListaProduto()) {
+                    if (p.getId().equals(idProduto)) {
+                        p.setPrecoInicial(lance);
+                        break;
+                    }
+                }
+            }
+        }
+
     }
 
 }
