@@ -213,10 +213,9 @@ public class LeilaoVersao2 {
                             oos1.writeUTF(process.getId());
                             oos1.writeUTF(process.getPort());
                             oos1.writeUTF(lance);
-                            oos1.writeUTF(produtoaux.getName());
+                            oos1.writeUTF(produtoaux.getId());
                             oos1.write(encryptedText.length);
                             oos1.write(encryptedText);
-                            oos1.writeObject(process.getChavePublica());
                             oos1.flush();
 
                             //*****************************************************
@@ -431,7 +430,7 @@ public class LeilaoVersao2 {
     public static Produto verificaoProdutoNaLista(String produtoDesejado, Processo process) {
 
         Produto prod;
-        for (Produto p : process.getListaProduto()) {
+        for (Produto p : process.getListaProdutosLeiloando()) {
             if (produtoDesejado.equals(p.getName())) {
                 return prod = p;
             }
@@ -492,7 +491,7 @@ public class LeilaoVersao2 {
 
     public static void mostraProdutosLeiloandoDesseProcesso(String processo) {
         
-        System.out.println("oiii");
+       
         if (listaProcessosLeiloeros.isEmpty()) {
             System.out.println("...está vazia...");
         } else {

@@ -70,7 +70,7 @@ public class Cronometro extends Thread {
             Produto product = null;
             for (Processo p : processList) {
                 if (p.getId().equals(leiloeroId)) {
-                    for (Produto pro : p.getListaProduto()) {
+                    for (Produto pro : p.getListaProdutosLeiloando()) {
                         if (pro.getId().equals(idProduto)) {
                             product = pro;
                             break;
@@ -131,6 +131,13 @@ public class Cronometro extends Thread {
             byte[] m1 = bos.toByteArray();
             DatagramPacket messageOut = new DatagramPacket(m1, m1.length, group, MULT_PORT);
             s.send(messageOut);
+
+            for (Controle c : procesosInteresados) {
+                if (c.getProdutoId().equals(idProduto)) {
+                       procesosInteresados.remove(c);
+                       break;
+                }
+            }
         } catch (InterruptedException e) {
         } catch (IOException ex) {
             Logger.getLogger(Cronometro.class.getName()).log(Level.SEVERE, null, ex);
