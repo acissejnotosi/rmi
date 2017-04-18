@@ -28,6 +28,7 @@ import static leilaoversao2.LeilaoVersao2.assinatura;
 
 import static leilaoversao2.LeilaoVersao2.procesosInteresados;
 import static leilaoversao2.LeilaoVersao2.processList;
+import static leilaoversao2.LeilaoVersao2.verificaSeExisteProessoLeiloeiro;
 
 /**
  * Classe utilizada para o recebimento das mensagens em Multicast
@@ -107,17 +108,15 @@ public class ServidorMultiCast extends Thread {
                             String port = ois.readUTF();
                             PublicKey chavePublica = (PublicKey) ois.readObject();
                             List<Produto> listaProduto = (ArrayList<Produto>) ois.readObject();
-
                             List<Produto> listaProdutosleiloando = (ArrayList<Produto>) ois.readObject();
 
-                            //   List<Produto> listaProdutosleiloando = new ArrayList<Produto>();
                             // *********************************************
                             // Adicionado lista de Produtos a minha lista de Produtos local
-                            adicionaListaDeProdutos(pid, listaProduto);
-
+                            // adicionaListaDeProdutos(pid, listaProduto);
                             // *********************************************
                             // Criando um novo processo e adicionando na lista de processos
-                            Processo novoProcesso = new Processo(pid, port, chavePublica, listaProduto, listaProdutosleiloando);
+                            Processo novoProcesso = new Processo(pid, port, chavePublica, listaProduto,
+                                    listaProdutosleiloando);
                             processList.add(novoProcesso);
                             List<Produto> produtos = retornaListadeProdutosdeProcesso(process.getId());
                             // *********************************************
@@ -158,7 +157,7 @@ public class ServidorMultiCast extends Thread {
                             }
 
                             System.out.println("");
-                            System.out.print("[UNICAST - envia]");
+                            System.out.print("[UNICAST - envia] tipo N");
                             System.out.print(" ID do participante: " + process.getId());
                             System.out.print(", Porta: " + process.getPort());
                             System.out.print(", Chave publica: - ");
@@ -208,19 +207,33 @@ public class ServidorMultiCast extends Thread {
                         String port = ois.readUTF();
                         List<Produto> novaListaProduto = (ArrayList<Produto>) ois.readObject();
                         List<Produto> novaListaProdutoLeiloando = (ArrayList<Produto>) ois.readObject();
-                        System.out.println("novaListaProduto.size()"+novaListaProduto.size());
-                        System.out.println("novaListaProdutoLeiloando.size()"+novaListaProdutoLeiloando.size());
+
+                        System.out.println("novaListaProduto.size()" + novaListaProduto.size());
+                        System.out.println("novaListaProdutoLeiloando.size()" + novaListaProdutoLeiloando.size());
                         //**************************************************
                         //Atualiza lista de produto e produto leiloando desse processo
                         //Além disso atualiza a lista de processos leiloeiros para
                         //o processo corrente
-                        for (Processo pro : processList) {
-                            if (pro.getId().equals(p)) {
-                                pro.setListaProduto(novaListaProduto);
-                                pro.setListaProdutosLeiloando(novaListaProdutoLeiloando);
-                                LeilaoVersao2.listaProcessosLeiloeros.add(pro);
-                            }
+                        for (Produto prod : novaListaProdutoLeiloando) {
+                            System.out.println("PRoduto: " + prod.getName());
 
+                        }
+
+                        for (Processo pro : processList) {
+                            if (pro.getId().equals(p) && (!pro.getId().equals(process.getId()))) {
+                                pro.setListaProduto(novaListaProduto);
+                                System.out.println("Tamanho lista proc nova produto: " + pro.getListaProduto().size());
+                                pro.setListaProdutosLeiloando(novaListaProdutoLeiloando);
+
+                                System.out.println("Tamanho lista proc nova produto leiloando: " + pro.getListaProdutosLeiloando().size());
+
+                            }
+                            if (pro.getId().equals(p)) {
+
+                                if (!verificaSeExisteProessoLeiloeiro(pro.getId())) {
+                                    LeilaoVersao2.listaProcessosLeiloeros.add(pro);
+                                }
+                            }
                         }
 
                         break;

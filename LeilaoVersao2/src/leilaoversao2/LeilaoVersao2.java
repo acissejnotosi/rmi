@@ -131,8 +131,7 @@ public class LeilaoVersao2 {
 
         //***********************************************
         //Verificação se a mensagem está sendo enviada.
-        System.out.println("\n[MULTICAST enviando] Enviando a informação sobre este novo processo:");
-        System.out.print("[MULTICAST enviando]");
+        System.out.println("\n[MULTICAST enviando] Enviando a informação sobre este novo processo tipo N:");
         System.out.print(" ID do participante: " + nomeProcesso);
         System.out.print(", Porta: " + port);
         System.out.println(", Chave publica: - ");
@@ -182,7 +181,7 @@ public class LeilaoVersao2 {
                     System.out.println("Digite o NOME de um dos processos leiloeiros para dar lance em 1 produto:");
                     nomeProRecebeLance = in.nextLine();
 
-                    if (verificaSeExisteProesso(nomeProRecebeLance)) {
+                    if (verificaSeExisteProessoLeiloeiro(nomeProRecebeLance)) {
                         System.out.println("Processo para dar lance selecionado com sucesso!");
                         paux = verificaProcessoNaLista(nomeProRecebeLance);
                         System.out.println("Agora selecione o PRODUTO desejado:");
@@ -217,6 +216,7 @@ public class LeilaoVersao2 {
                             oos1.writeUTF(produtoaux.getName());
                             oos1.write(encryptedText.length);
                             oos1.write(encryptedText);
+                            oos1.writeObject(process.getChavePublica());
                             oos1.flush();
 
                             //*****************************************************
@@ -340,19 +340,27 @@ public class LeilaoVersao2 {
                         for (Produto p : process.getListaProduto()) {
                             if (p.getName().equals(produtoDesejado)) {
                                 process.getListaProdutosLeiloando().add(p);                 //adiciona o produto na lista de produtos
+                               //System.out.println("produto" + p.getName());
+                               //System.out.println("Tamanho lista produto leiloando" + process.getListaProdutosLeiloando().size());
                                 //leiloando.
                                 process.getListaProduto().remove(p);                        //remove o produto da lista de produtos.
+                                //System.out.println("Tamanho lista produto leiloando" + process.getListaProduto().size());
+                               
                                 break;
                             }
                         }
-
+                        
+                        System.out.println("Tamanho list aprocessos leiloeiros: " + listaProcessosLeiloeros.size());
+                      
+                        
                         ByteArrayOutputStream bos1 = new ByteArrayOutputStream(1024);
                         ObjectOutputStream oos1 = new ObjectOutputStream(bos1);
                         oos1.writeChar('S');
                         oos1.writeUTF(process.getId());
                         oos1.writeUTF(process.getPort());
-                        oos1.writeObject(process.getListaProdutosLeiloando());
                         oos1.writeObject(process.getListaProduto());
+                        oos1.writeObject(process.getListaProdutosLeiloando());
+
                         oos1.flush();
                         
                         //*****************************************************
@@ -402,6 +410,12 @@ public class LeilaoVersao2 {
                     System.exit(0);
 
                     break;
+                    
+                case"8":
+                    System.out.println("Lista de processos leiloeiros");
+                    for(Processo proc: listaProcessosLeiloeros){
+                        System.out.println("Processo leiloeiro: " + proc.getId());
+                    }
             }
 
         }
@@ -482,12 +496,13 @@ public class LeilaoVersao2 {
         } else {
             for (Processo pro : listaProcessosLeiloeros) {
 
-                System.out.println("PROCESSO" + pro.getId() + " está vendendo o(s) seguintes produto(s): ");
+                System.out.println("PROCESSO " + pro.getId() + " está vendendo o(s) seguintes produto(s): ");
 
-                for (int n = 0; n < pro.getListaProdutosLeiloando().size(); n++) {
+                for (Produto n: pro.getListaProdutosLeiloando()) {
 
-                    System.out.print(pro.getListaProdutosLeiloando().get(n).getName() + ", ");
+                    System.out.print(n.getName() + ", ");
                 }
+                System.out.print(".");
             }
         }
     }
@@ -498,7 +513,7 @@ public class LeilaoVersao2 {
         }
     }
 
-    public static boolean verificaSeExisteProesso(String processo) {
+    public static boolean verificaSeExisteProessoLeiloeiro(String processo) {
         for (Processo pro : listaProcessosLeiloeros) {
             if (pro.getId().equals(processo)) {
 
@@ -509,6 +524,8 @@ public class LeilaoVersao2 {
     }
 
     public static void mostraProdutosLeiloandoDesseProcesso(String processo) {
+        
+        System.out.println("oiii");
         if (listaProcessosLeiloeros.isEmpty()) {
             System.out.println("...está vazia...");
         } else {
@@ -516,7 +533,7 @@ public class LeilaoVersao2 {
             for (Processo pro : listaProcessosLeiloeros) {
                 if (pro.getId().equals(processo)) {
                     for (Produto prod : pro.getListaProdutosLeiloando()) {
-                        System.out.print(prod.getName() + ", ");
+                        System.out.print(" " + prod.getName() + ", ");
 
                     }
                     System.out.print(".");

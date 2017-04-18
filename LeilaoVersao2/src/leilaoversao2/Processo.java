@@ -112,11 +112,22 @@ class Processo implements Serializable {
     }
 
     public void setListaProduto(List<Produto> listaProduto) {
-        this.listaProduto = listaProduto;
+        for(Produto prod: listaProduto){
+            this.listaProduto.add(prod);
+        }
+        
+        
+            System.out.println("setlistaProduto tam: " + this.listaProduto.size());
+        
     }
 
     public void setListaProdutosLeiloando(List<Produto> listaProdutosLeiloando) {
-        listaProdutosLeiloando = listaProdutosLeiloando;
+         for(Produto prod: listaProdutosLeiloando){
+            this.listaProdutosLeiloando.add(prod);
+        }
+        
+        
+            System.out.println("setlistaProduto tam: " + this.listaProdutosLeiloando.size());
     }
 
     public void setChavePrivada(PrivateKey chavePrivada) {

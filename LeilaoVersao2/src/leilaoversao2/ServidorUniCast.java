@@ -118,7 +118,7 @@ public class ServidorUniCast extends Thread {
 
                         // *********************************************
                         // Adicionando aminha Lista de Produtos produto recebido
-                        adicionaListaDeProdutos(process.getId(), listaProduto);
+                        //adicionaListaDeProdutos(process.getId(), listaProduto);
 
   
 
@@ -148,14 +148,17 @@ public class ServidorUniCast extends Thread {
                         String lance = ois.readUTF();
                         idProduto = ois.readUTF(); //Id produto do processo atual(leiloero)
                         Integer tamanho = ois.read();//Id produto do processo atual(leiloero)
+                        
                         // *********************************************
                         // Lendo byte array
                         byte[] mensagemCripto = new byte[tamanho];
                         for (int i = 0; i < tamanho; i++) {
                             mensagemCripto[i] = ois.readByte();
                         }
-
-                        PublicKey chavePublica1 = assinatura.get(pid).getPublic_chave();
+                        
+                        
+                        PublicKey chavePublica1 = (PublicKey) ois.readObject();
+                        //PublicKey chavePublica1 = assinatura.get(pid).getPublic_chave();
 
                         // *********************************************
                         // Descriptografando mensagem recebido com chaave Publicado do Processo que enviou requisiço
