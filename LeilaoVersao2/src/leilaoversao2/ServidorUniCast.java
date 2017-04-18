@@ -118,7 +118,7 @@ public class ServidorUniCast extends Thread {
 
                         // *********************************************
                         // Adicionando aminha Lista de Produtos produto recebido
-                        //adicionaListaDeProdutos(process.getId(), listaProduto);
+                        adicionaListaDeProdutos(process.getId(), listaProduto);
 
   
 

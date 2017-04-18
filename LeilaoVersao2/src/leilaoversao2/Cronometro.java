@@ -70,7 +70,7 @@ public class Cronometro extends Thread {
             Produto product = null;
             for (Processo p : processList) {
                 if (p.getId().equals(leiloeroId)) {
-                    for (Produto pro : p.getListaProduto()) {
+                    for (Produto pro : p.getListaProdutosLeiloando()) {
                         if (pro.getId().equals(idProduto)) {
                             product = pro;
                             break;
