@@ -72,7 +72,7 @@ public class ServidorUniCast extends Thread {
         DatagramPacket messageIn;
         ByteArrayInputStream bis;
         ObjectInputStream ois;
-        Chaves gera_chave = null;
+        Chaves gera_chave = new Chaves();
 
         while (true) {
 
@@ -156,9 +156,7 @@ public class ServidorUniCast extends Thread {
                             mensagemCripto[i] = ois.readByte();
                         }
                         
-                        
-                        PublicKey chavePublica1 = (PublicKey) ois.readObject();
-                        //PublicKey chavePublica1 = assinatura.get(pid).getPublic_chave();
+                        PublicKey chavePublica1 = assinatura.get(pid).getPublic_chave();
 
                         // *********************************************
                         // Descriptografando mensagem recebido com chaave Publicado do Processo que enviou requisiço
@@ -178,6 +176,7 @@ public class ServidorUniCast extends Thread {
                         // verifica valor do lance maior de que valor do produto
                         Produto produto = buscaUmProdutoPorId(process.getId(), idProduto);
                         int to = Integer.parseInt(produto.getPrecoInicial());
+                        int teste =  Integer.parseInt(lance);
 
                         if (to > Integer.parseInt(lance)) {
                             System.out.println("Valor do Lance não é suficiente!");
@@ -404,7 +403,7 @@ public class ServidorUniCast extends Thread {
 
         for (Processo proc : processList) {
             if (proc.getId().equals(process)) {
-                for (Produto p : proc.getListaProduto()) {
+                for (Produto p : proc.getListaProdutosLeiloando()) {
                     if (p.getId().equals(idProduto)) {
                         return p;
 
@@ -427,7 +426,6 @@ public class ServidorUniCast extends Thread {
     public void adicionaListaDeProdutos(String id, List<Produto> listaProduto) {
         for (Processo proc : processList) {
             if (proc.getId().equals(id)) {
-
                 proc.setListaProduto(listaProduto);
                 for (Produto prod : proc.getListaProduto()) {
                     Controle controle = new Controle(prod.getId(), prod.getPrecoInicial());
