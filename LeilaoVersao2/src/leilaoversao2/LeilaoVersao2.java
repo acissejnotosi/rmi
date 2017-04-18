@@ -411,6 +411,7 @@ public class LeilaoVersao2 {
         if (process.getListaProduto().isEmpty()) {
             System.out.println("...está vazia...");
         } else {
+            System.out.println("Tamanho da lista de produtos após o leilao: " + process.getListaProduto().size());
             for (Produto p : process.getListaProduto()) {
                 System.out.println(" - produto: " + p.getName());
             }
