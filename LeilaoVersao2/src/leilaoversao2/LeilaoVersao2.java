@@ -142,7 +142,7 @@ public class LeilaoVersao2 {
         while (true) {
             String cmd;
 
-            System.out.println("MENU");
+            System.out.println("************************MENU***************************");
             System.out.println("Pressione a tecla desejada:");
             System.out.println("[1] Dar um lance em um produto ");
             System.out.println("[2] Lista os processos ");
@@ -283,41 +283,8 @@ public class LeilaoVersao2 {
                     break;
                 case "4":
                     if (process.getListaProduto().isEmpty()) {
-                        System.out.println("SUA LISTA DE PRODUTOS ESTÁ VAZIA!");
-                        System.out.println("CADASTRO DE UM NOVO PRODUTO");
-                        System.out.println("Informe o NOME do produto:");
-                        nomeProduto = in.nextLine();
-                        clearConsole();
 
-                        System.out.println("CADASTRO DE UM NOVO PRODUTO");
-                        System.out.println("Informe o ID do produto:");
-                        idProduto = in.nextLine();
-                        clearConsole();
-
-                        System.out.println("CADASTRO DE UM NOVO PRODUTO");
-                        System.out.println("Informe DESCRIÇÃO do produto:");
-                        descProduto = in.nextLine();
-                        clearConsole();
-
-                        System.out.println("CADASTRO DE UM NOVO PRODUTO");
-                        System.out.println("Informe o PREÇO do produto:");
-                        precoProduto = in.nextLine();
-                        clearConsole();
-
-                        System.out.println("CADASTRO DE UM NOVO PRODUTO");
-                        System.out.println("Informe o TEMPO de LEILAO do produto:");
-                        tempoLeilao = in.nextLine();
-                        clearConsole();
-
-                        //*********************************************
-                        //Cria um novo produto.
-                        product = new Produto(idProduto, nomeProduto, descProduto, precoProduto, tempoLeilao, nomeProcesso);
-
-                        //*********************************************
-                        //Adiciona o produto a lista de produtos.
-                        process.getListaProduto().add(product);
-
-                        System.out.println("Selecione 4 novamente caso queria leiloar o produto que acabou de cadastrar!");
+                        System.out.println("SUA LISTA DE PRODUTOS ESTÁ VAZIA!\n Selecione a opção 3 para cadastrar um novo produto.");
                     } else {
                         String produtoDesejado;
 
